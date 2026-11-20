@@ -1,0 +1,31 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Blue Section (Left Pillar) -->
+    <path
+        android:fillColor="#4285F4"
+        android:pathData="M158,391v-142l-82,-63V361q0,30 30,30z" />
+
+    <!-- Red Section (Center V / Roof Fold) -->
+    <path
+        android:fillColor="#EA4335"
+        android:pathData="M154,248l102,77l102,-77v-98l-102,77l-102,-77z" />
+
+    <!-- Green Section (Right Pillar) -->
+    <path
+        android:fillColor="#34A853"
+        android:pathData="M354,391v-142l82,-63V361q0,30 -30,30z" />
+
+    <!-- Dark Red Section (Top Left Shoulder) -->
+    <path
+        android:fillColor="#C5221F"
+        android:pathData="M76,188l82,63v-98l-30,-23c-27,-21 -52,0 -52,26z" />
+
+    <!-- Yellow Section (Top Right Shoulder) -->
+    <path
+        android:fillColor="#FBBC04"
+        android:pathData="M436,188l-82,63v-98l30,-23c27,-21 52,0 52,26z" />
+</vector>
