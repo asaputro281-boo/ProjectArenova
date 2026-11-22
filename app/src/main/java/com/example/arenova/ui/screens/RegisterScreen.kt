@@ -6,13 +6,14 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,6 +51,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -68,10 +70,19 @@ import com.example.arenova.ui.theme.ArenovaErrorLightBg
 import com.example.arenova.ui.theme.ArenovaErrorRed
 import com.example.arenova.ui.theme.ArenovaErrorRedDark
 import com.example.arenova.ui.theme.ArenovaPlaceholderGray
-import com.example.arenova.ui.theme.ArenovaPrimaryGreen
 import com.example.arenova.ui.theme.ArenovaScreenBg
 import com.example.arenova.ui.theme.ArenovaSubtitleGray
 import com.example.arenova.ui.theme.ArenovaTheme
+
+// Palet warna hijau disamakan persis dengan LoginScreen
+private val RevoraGreenStart = Color(0xFF43A047)
+private val RevoraGreenEnd = Color(0xFF2E7D32)
+private val RevoraGreenPrimary = Color(0xFF388E3C)
+private val RevoraGreenSoftBg = Color(0xFFE8F5E9)
+
+private val RevoraGreenGradient = Brush.horizontalGradient(
+    colors = listOf(RevoraGreenStart, RevoraGreenEnd)
+)
 
 @Composable
 fun RegisterScreen(
@@ -79,7 +90,7 @@ fun RegisterScreen(
     onLoginClick: () -> Unit = {},
     onRegisterSuccess: (nama: String, email: String, pass: String) -> Unit = { _, _, _ -> },
     onSupportClick: () -> Unit = {},
-    initialShowError: Boolean = true,
+    initialShowError: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     var namaLengkap by remember { mutableStateOf("") }
@@ -191,8 +202,8 @@ fun RegisterScreen(
                     .background(
                         Brush.horizontalGradient(
                             colors = listOf(
-                                Color(0xFFE8F1FD),
-                                Color(0xFFE2ECFB)
+                                RevoraGreenSoftBg,
+                                Color(0xFFDCEEDC)
                             )
                         )
                     )
@@ -206,7 +217,7 @@ fun RegisterScreen(
                     val circleCenter = Offset(w * 0.84f, h * 0.48f)
                     val radius = w * 0.26f
                     val strokeStyle = Stroke(width = 2.dp.toPx())
-                    val waterMarkColor = Color(0xFF00B368).copy(alpha = 0.16f)
+                    val waterMarkColor = RevoraGreenPrimary.copy(alpha = 0.16f)
 
                     drawCircle(
                         color = waterMarkColor,
@@ -242,25 +253,21 @@ fun RegisterScreen(
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Logo Squircle Kecil "A"
-                    Box(
+                    // Logo Arenova Baru
+                    Image(
+                        painter = painterResource(id = R.drawable.logo_arenova),
+                        contentDescription = "Logo Arenova",
                         modifier = Modifier
                             .size(52.dp)
-                            .background(
-                                color = ArenovaPrimaryGreen,
-                                shape = RoundedCornerShape(14.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "A",
-                            color = Color.White,
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontFamily = FontFamily.SansSerif,
-                            textAlign = TextAlign.Center
-                        )
-                    }
+                            .shadow(
+                                elevation = 3.dp,
+                                shape = RoundedCornerShape(14.dp),
+                                ambientColor = RevoraGreenPrimary.copy(alpha = 0.25f),
+                                spotColor = RevoraGreenPrimary.copy(alpha = 0.35f)
+                            )
+                            .clip(RoundedCornerShape(14.dp)),
+                        contentScale = ContentScale.Crop
+                    )
 
                     Spacer(modifier = Modifier.width(14.dp))
 
@@ -337,11 +344,11 @@ fun RegisterScreen(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
-                    focusedBorderColor = ArenovaPrimaryGreen,
+                    focusedBorderColor = RevoraGreenPrimary,
                     unfocusedBorderColor = Color.Transparent,
                     focusedTextColor = ArenovaDarkText,
                     unfocusedTextColor = ArenovaDarkText,
-                    cursorColor = ArenovaPrimaryGreen
+                    cursorColor = RevoraGreenPrimary
                 )
             )
 
@@ -397,11 +404,11 @@ fun RegisterScreen(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
-                    focusedBorderColor = ArenovaPrimaryGreen,
+                    focusedBorderColor = RevoraGreenPrimary,
                     unfocusedBorderColor = Color.Transparent,
                     focusedTextColor = ArenovaDarkText,
                     unfocusedTextColor = ArenovaDarkText,
-                    cursorColor = ArenovaPrimaryGreen
+                    cursorColor = RevoraGreenPrimary
                 )
             )
 
@@ -459,11 +466,11 @@ fun RegisterScreen(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
-                    focusedBorderColor = ArenovaPrimaryGreen,
+                    focusedBorderColor = RevoraGreenPrimary,
                     unfocusedBorderColor = Color.Transparent,
                     focusedTextColor = ArenovaDarkText,
                     unfocusedTextColor = ArenovaDarkText,
-                    cursorColor = ArenovaPrimaryGreen
+                    cursorColor = RevoraGreenPrimary
                 )
             )
 
@@ -526,18 +533,18 @@ fun RegisterScreen(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
-                    focusedBorderColor = ArenovaPrimaryGreen,
+                    focusedBorderColor = RevoraGreenPrimary,
                     unfocusedBorderColor = Color.Transparent,
                     focusedTextColor = ArenovaDarkText,
                     unfocusedTextColor = ArenovaDarkText,
-                    cursorColor = ArenovaPrimaryGreen
+                    cursorColor = RevoraGreenPrimary
                 )
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // ==========================================
-            // 4. TOMBOL DAFTAR (PRIMARY GREEN)
+            // 4. TOMBOL DAFTAR (GRADASI HIJAU SEPERTI LOGIN)
             // ==========================================
             Button(
                 onClick = { handleRegister() },
@@ -545,17 +552,25 @@ fun RegisterScreen(
                     .fillMaxWidth()
                     .height(52.dp),
                 shape = RoundedCornerShape(14.dp),
+                contentPadding = PaddingValues(0.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = ArenovaPrimaryGreen,
+                    containerColor = Color.Transparent,
                     contentColor = Color.White
                 )
             ) {
-                Text(
-                    text = "DAFTAR",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(brush = RevoraGreenGradient),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "DAFTAR",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.5.sp
+                    )
+                }
             }
 
             // ==========================================
@@ -633,7 +648,7 @@ fun RegisterScreen(
                     text = "Masuk",
                     fontSize = 13.5.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF007A3D),
+                    color = RevoraGreenPrimary,
                     modifier = Modifier
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },

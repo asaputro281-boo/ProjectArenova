@@ -3,28 +3,28 @@
     android:height="22dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
-    <!-- Plus Symbol on the Left -->
+    <!-- User Body -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#00B368"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
-        android:pathData="M3,11h6M6,8v6" />
-    <!-- Person Head -->
+        android:pathData="M16,21v-2a4,4 0,0 0,-4 -4H6a4,4 0,0 0,-4 4v2" />
+    <!-- User Head -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#00B368"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
-        android:pathData="M16,7a4,4 0,1 0,-8 0a4,4 0,1 0,8 0z" />
-    <!-- Person Shoulders / Body -->
+        android:pathData="M13,7a4,4 0,1 0,-8 0a4,4 0,1 0,8 0z" />
+    <!-- Plus Symbol (Proporsional & Tidak Gandeng/Bertabrakan) -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#00B368"
         android:strokeWidth="2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
-        android:pathData="M22,21v-2a4,4 0 0,0 -4,-4H10a4,4 0 0,0 -4,4v2" />
+        android:pathData="M19,8v6M16,11h6" />
 </vector>

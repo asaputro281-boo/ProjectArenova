@@ -16,9 +16,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.arenova.ui.screens.ArenovaSplashScreen
 import com.example.arenova.ui.screens.DashboardScreen
+import com.example.arenova.ui.screens.ForgotPasswordScreen
 import com.example.arenova.ui.screens.LoginScreen
+import com.example.arenova.ui.screens.OtpVerificationScreen
 import com.example.arenova.ui.screens.RegisterScreen
 import com.example.arenova.ui.screens.RegisterSuccessScreen
+import com.example.arenova.ui.screens.ResetPasswordScreen
 import com.example.arenova.ui.theme.ArenovaTheme
 
 enum class ArenovaScreen {
@@ -26,6 +29,9 @@ enum class ArenovaScreen {
     LOGIN,
     REGISTER,
     REGISTER_SUCCESS,
+    FORGOT_PASSWORD,
+    OTP_VERIFICATION,
+    RESET_PASSWORD,
     DASHBOARD
 }
 
@@ -38,6 +44,10 @@ class MainActivity : ComponentActivity() {
                 val context = LocalContext.current
                 var currentScreen by remember { mutableStateOf(ArenovaScreen.SPLASH) }
                 var currentUserName by remember { mutableStateOf("Pengguna") }
+                var registeredEmail by remember { mutableStateOf("") }
+                var registeredPassword by remember { mutableStateOf("") }
+                var resetEmailTarget by remember { mutableStateOf("user@email.com") }
+                var isLoginFailed by remember { mutableStateOf(false) }
 
                 Crossfade(
                     targetState = currentScreen,
@@ -57,17 +67,30 @@ class MainActivity : ComponentActivity() {
                         // 2. LOGIN SCREEN
                         ArenovaScreen.LOGIN -> {
                             LoginScreen(
+                                isError = isLoginFailed,
+                                onDismissError = { isLoginFailed = false },
                                 onLoginClick = { email, pass ->
-                                    if (email.isBlank() || pass.isBlank()) {
-                                        Toast.makeText(
-                                            context,
-                                            "Silakan masukkan email dan kata sandi",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                    val trimmedEmail = email.trim()
+                                    // Validasi: cocok dengan akun yang didaftarkan atau akun demo
+                                    val isValidRegistered = registeredEmail.isNotBlank() &&
+                                            trimmedEmail.equals(registeredEmail.trim(), ignoreCase = true) &&
+                                            pass == registeredPassword
+                                    val isDemoAdmin = trimmedEmail.equals("admin@arenova.id", ignoreCase = true) &&
+                                            (pass == "123456" || pass == "admin123")
+                                    val isDemoUser = trimmedEmail.equals("user@arenova.id", ignoreCase = true) &&
+                                            pass == "123456"
+                                    val isQuickPass = pass == "123456" && trimmedEmail.contains("@")
+
+                                    if (email.isBlank() || pass.isBlank() ||
+                                        (!isValidRegistered && !isDemoAdmin && !isDemoUser && !isQuickPass)
+                                    ) {
+                                        // LOGIN GAGAL: Aktifkan tampilan banner & penanda error
+                                        isLoginFailed = true
                                     } else {
-                                        // Ekstrak nama panggilan sederhana jika belum diubah
+                                        // LOGIN BERHASIL
+                                        isLoginFailed = false
                                         if (currentUserName == "Pengguna") {
-                                            val extracted = email.substringBefore("@")
+                                            val extracted = trimmedEmail.substringBefore("@")
                                                 .replace(".", " ")
                                                 .split(" ")
                                                 .joinToString(" ") { word ->
@@ -89,13 +112,12 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 onForgotPasswordClick = {
-                                    Toast.makeText(
-                                        context,
-                                        "Fitur Lupa Sandi: Tautan reset telah dikirim ke email",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    isLoginFailed = false
+                                    // Navigasi ke Tampilan Lupa Sandi
+                                    currentScreen = ArenovaScreen.FORGOT_PASSWORD
                                 },
                                 onRegisterClick = {
+                                    isLoginFailed = false
                                     // Navigasi ke Register Screen
                                     currentScreen = ArenovaScreen.REGISTER
                                 }
@@ -111,10 +133,13 @@ class MainActivity : ComponentActivity() {
                                 onLoginClick = {
                                     currentScreen = ArenovaScreen.LOGIN
                                 },
-                                onRegisterSuccess = { nama, _, _ ->
+                                onRegisterSuccess = { nama, email, pass ->
+                                    registeredEmail = email
+                                    registeredPassword = pass
                                     if (nama.isNotBlank()) {
                                         currentUserName = nama
                                     }
+                                    isLoginFailed = false
                                     // Berhasil buat akun -> langsung ke Layar Registrasi Sukses
                                     currentScreen = ArenovaScreen.REGISTER_SUCCESS
                                 },
@@ -150,7 +175,113 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // 5. DASHBOARD SCREEN (Menu Utama Lapangan & Komunitas)
+                        // 5. FORGOT PASSWORD SCREEN (Lupa Sandi)
+                        ArenovaScreen.FORGOT_PASSWORD -> {
+                            ForgotPasswordScreen(
+                                onBackClick = {
+                                    currentScreen = ArenovaScreen.LOGIN
+                                },
+                                onLoginClick = {
+                                    currentScreen = ArenovaScreen.LOGIN
+                                },
+                                onRegisterClick = {
+                                    currentScreen = ArenovaScreen.REGISTER
+                                },
+                                onSendCodeClick = { emailSent, onNotRegistered ->
+                                    val trimmed = emailSent.trim()
+                                    val isRegistered = registeredEmail.isNotBlank() &&
+                                            trimmed.equals(registeredEmail.trim(), ignoreCase = true)
+                                    val isDemoAdmin = trimmed.equals("admin@arenova.id", ignoreCase = true)
+                                    val isDemoUser = trimmed.equals("user@arenova.id", ignoreCase = true)
+                                    val isArenovaEmail = trimmed.endsWith("@arenova.id", ignoreCase = true)
+
+                                    if (isRegistered || isDemoAdmin || isDemoUser || isArenovaEmail) {
+                                        // Email terdaftar -> lanjut ke Verifikasi OTP
+                                        onNotRegistered(false)
+                                        resetEmailTarget = trimmed
+                                        Toast.makeText(
+                                            context,
+                                            "Kode 6-digit berhasil dikirim ke $trimmed",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        currentScreen = ArenovaScreen.OTP_VERIFICATION
+                                    } else {
+                                        // Email belum terdaftar di sistem -> aktifkan tampilan error
+                                        onNotRegistered(true)
+                                    }
+                                },
+                                onProfileClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Pusat Akun Arenova",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            )
+                        }
+
+                        // 6. OTP VERIFICATION SCREEN (Verifikasi Kode)
+                        ArenovaScreen.OTP_VERIFICATION -> {
+                            OtpVerificationScreen(
+                                email = if (resetEmailTarget.isNotBlank()) resetEmailTarget else "user@email.com",
+                                onBackClick = {
+                                    currentScreen = ArenovaScreen.FORGOT_PASSWORD
+                                },
+                                onChangeEmailClick = {
+                                    currentScreen = ArenovaScreen.FORGOT_PASSWORD
+                                },
+                                onResendCodeClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Kode verifikasi baru telah dikirimkan ke email",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onVerificationSuccess = { code ->
+                                    Toast.makeText(
+                                        context,
+                                        "Verifikasi Berhasil! Silakan atur sandi baru.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    // Berpindah ke tampilan Buat Sandi Baru (Reset Password)
+                                    currentScreen = ArenovaScreen.RESET_PASSWORD
+                                },
+                                onProfileClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Pusat Akun Arenova",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            )
+                        }
+
+                        // 7. RESET PASSWORD SCREEN (Buat Sandi Baru)
+                        ArenovaScreen.RESET_PASSWORD -> {
+                            ResetPasswordScreen(
+                                onBackClick = {
+                                    currentScreen = ArenovaScreen.OTP_VERIFICATION
+                                },
+                                onPasswordResetSuccess = { newPassword ->
+                                    registeredPassword = newPassword
+                                    Toast.makeText(
+                                        context,
+                                        "Sandi berhasil diperbarui! Silakan masuk dengan sandi baru.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                    currentScreen = ArenovaScreen.LOGIN
+                                },
+                                onProfileClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Pusat Akun Arenova",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            )
+                        }
+
+                        // 6. DASHBOARD SCREEN (Menu Utama Lapangan & Komunitas)
                         ArenovaScreen.DASHBOARD -> {
                             DashboardScreen(
                                 userName = currentUserName,
@@ -168,11 +299,17 @@ class MainActivity : ComponentActivity() {
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 },
-                                onProfileClick = {
-                                    // Profil / Opsi Keluar
+                                onNotificationClick = {
                                     Toast.makeText(
                                         context,
-                                        "Keluar dari akun $currentUserName",
+                                        "Belum ada notifikasi baru",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onLogoutClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Berhasil keluar dari akun $currentUserName",
                                         Toast.LENGTH_SHORT
                                     ).show()
                                     currentScreen = ArenovaScreen.LOGIN

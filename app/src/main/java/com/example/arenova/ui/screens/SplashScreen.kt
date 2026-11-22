@@ -13,6 +13,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,12 +23,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
@@ -37,9 +41,12 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.arenova.R
 import com.example.arenova.ui.theme.ArenovaTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -236,10 +243,12 @@ fun ArenovaSplashScreen(
                 )
             }
 
-            // Logo Huruf "A"
-            Canvas(
+            // Logo Arenova Baru
+            Image(
+                painter = painterResource(id = R.drawable.logo_arenova),
+                contentDescription = "Logo Arenova",
                 modifier = Modifier
-                    .size(140.dp, 160.dp)
+                    .size(150.dp)
                     .align(Alignment.Center)
                     .graphicsLayer {
                         scaleX = logoScale.value
@@ -247,32 +256,15 @@ fun ArenovaSplashScreen(
                         translationY = logoOffsetY.value
                         alpha = contentAlpha.value
                     }
-            ) {
-                val w = size.width
-                val h = size.height
-
-                val letterAPath = Path().apply {
-                    fillType = PathFillType.EvenOdd
-                    moveTo(w * 0.50f, 0f)
-                    lineTo(w * 0.98f, h)
-                    lineTo(w * 0.70f, h)
-                    lineTo(w * 0.60f, h * 0.67f)
-                    lineTo(w * 0.40f, h * 0.67f)
-                    lineTo(w * 0.30f, h)
-                    lineTo(w * 0.02f, h)
-                    close()
-
-                    moveTo(w * 0.50f, h * 0.26f)
-                    lineTo(w * 0.61f, h * 0.54f)
-                    lineTo(w * 0.39f, h * 0.54f)
-                    close()
-                }
-
-                drawPath(
-                    path = letterAPath,
-                    color = Color.White
-                )
-            }
+                    .shadow(
+                        elevation = 16.dp,
+                        shape = RoundedCornerShape(36.dp),
+                        ambientColor = Color.Black.copy(alpha = 0.3f),
+                        spotColor = Color.Black.copy(alpha = 0.45f)
+                    )
+                    .clip(RoundedCornerShape(36.dp)),
+                contentScale = ContentScale.Crop
+            )
 
             // 3 Titik Indikator Horizontal
             Row(

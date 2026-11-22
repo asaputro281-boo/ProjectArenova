@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,6 +44,15 @@ import com.example.arenova.ui.theme.ArenovaPlaceholderGray
 import com.example.arenova.ui.theme.ArenovaPrimaryGreen
 import com.example.arenova.ui.theme.ArenovaSubtitleGray
 import com.example.arenova.ui.theme.ArenovaTheme
+
+// Palet warna hijau disamakan persis dengan tombol MASUK (Login) dan DAFTAR (Register)
+private val RevoraGreenStart = Color(0xFF43A047)
+private val RevoraGreenEnd = Color(0xFF2E7D32)
+private val RevoraGreenPrimary = Color(0xFF388E3C)
+
+private val RevoraGreenGradient = Brush.horizontalGradient(
+    colors = listOf(RevoraGreenStart, RevoraGreenEnd)
+)
 
 @Composable
 fun RegisterSuccessScreen(
@@ -137,30 +147,38 @@ fun RegisterSuccessScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp, vertical = 24.dp)
         ) {
-            // Tombol MASUK (Primary Green)
+            // Tombol MASUK (Gradasi Hijau yang sama persis dengan tombol lain)
             Button(
                 onClick = onLoginClick,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(54.dp)
+                    .height(52.dp)
                     .shadow(
-                        elevation = 6.dp,
-                        shape = RoundedCornerShape(16.dp),
-                        ambientColor = ArenovaPrimaryGreen.copy(alpha = 0.25f),
-                        spotColor = ArenovaPrimaryGreen.copy(alpha = 0.4f)
+                        elevation = 4.dp,
+                        shape = RoundedCornerShape(14.dp),
+                        ambientColor = RevoraGreenPrimary.copy(alpha = 0.25f),
+                        spotColor = RevoraGreenPrimary.copy(alpha = 0.35f)
                     ),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(14.dp),
+                contentPadding = PaddingValues(0.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = ArenovaPrimaryGreen,
+                    containerColor = Color.Transparent,
                     contentColor = Color.White
                 )
             ) {
-                Text(
-                    text = "MASUK",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(brush = RevoraGreenGradient),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "MASUK",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.5.sp
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(14.dp))
