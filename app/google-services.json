@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "179530675136",
+    "project_id": "arenova-d44a4",
+    "storage_bucket": "arenova-d44a4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:179530675136:android:d47328f470ca9f5eac8e25",
+        "android_client_info": {
+          "package_name": "com.arenova.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmK-5kJWU7gynKgU0WUi21Jap3uvkb82c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
