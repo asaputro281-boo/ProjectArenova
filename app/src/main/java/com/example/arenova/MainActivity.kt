@@ -15,7 +15,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.arenova.ui.screens.ArenovaSplashScreen
+import com.example.arenova.ui.screens.BadmintonListScreen
 import com.example.arenova.ui.screens.DashboardScreen
+import com.example.arenova.ui.screens.DashboardTab
 import com.example.arenova.ui.screens.ForgotPasswordScreen
 import com.example.arenova.ui.screens.LoginScreen
 import com.example.arenova.ui.screens.OtpVerificationScreen
@@ -34,7 +36,8 @@ enum class ArenovaScreen {
     OTP_VERIFICATION,
     RESET_PASSWORD,
     PASSWORD_CHANGED_SUCCESS,
-    DASHBOARD
+    DASHBOARD,
+    BADMINTON_LIST
 }
 
 class MainActivity : ComponentActivity() {
@@ -306,11 +309,16 @@ class MainActivity : ComponentActivity() {
                             DashboardScreen(
                                 userName = currentUserName,
                                 onCategoryClick = { category ->
-                                    Toast.makeText(
-                                        context,
-                                        "Membuka daftar lapangan $category",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    if (category.equals("Badminton", ignoreCase = true)) {
+                                        // Navigasi ke Layar Daftar Lapangan Badminton
+                                        currentScreen = ArenovaScreen.BADMINTON_LIST
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            "Membuka daftar lapangan $category",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
                                 },
                                 onCommunityClick = {
                                     Toast.makeText(
@@ -333,6 +341,60 @@ class MainActivity : ComponentActivity() {
                                         Toast.LENGTH_SHORT
                                     ).show()
                                     currentScreen = ArenovaScreen.LOGIN
+                                }
+                            )
+                        }
+
+                        // 7. BADMINTON COURT LIST SCREEN (Daftar Lapangan Badminton)
+                        ArenovaScreen.BADMINTON_LIST -> {
+                            BadmintonListScreen(
+                                onBackClick = {
+                                    currentScreen = ArenovaScreen.DASHBOARD
+                                },
+                                onNotificationClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Belum ada notifikasi baru",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onProfileClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Profil $currentUserName",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onFilterClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Membuka opsi filter lapangan",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onSortClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Membuka urutan harga & rating",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onBookCourtClick = { court ->
+                                    Toast.makeText(
+                                        context,
+                                        "Pemesanan ${court.name} (${court.price}/jam) berhasil dipilih!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onTabSelected = { tab ->
+                                    when (tab) {
+                                        DashboardTab.BERANDA -> {
+                                            currentScreen = ArenovaScreen.DASHBOARD
+                                        }
+                                        DashboardTab.RIWAYAT, DashboardTab.PROFIL -> {
+                                            currentScreen = ArenovaScreen.DASHBOARD
+                                        }
+                                    }
                                 }
                             )
                         }

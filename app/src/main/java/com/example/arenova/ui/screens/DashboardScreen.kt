@@ -48,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -74,6 +75,16 @@ import com.example.arenova.ui.theme.ArenovaPrimaryGreenLight
 import com.example.arenova.ui.theme.ArenovaScreenBg
 import com.example.arenova.ui.theme.ArenovaSubtitleGray
 import com.example.arenova.ui.theme.ArenovaTheme
+
+// Palet warna hijau disamakan persis dengan seluruh tombol tampilan sebelumnya (Login, Register, OTP Verification, Reset Password)
+private val RevoraGreenStart = Color(0xFF43A047)
+private val RevoraGreenEnd = Color(0xFF2E7D32)
+private val RevoraGreenPrimary = Color(0xFF388E3C)
+private val RevoraGreenSoftBg = Color(0xFFE8F5E9)
+
+private val RevoraGreenGradient = Brush.horizontalGradient(
+    colors = listOf(RevoraGreenStart, RevoraGreenEnd)
+)
 
 /**
  * Tab navigasi utama pada Dashboard Arenova
@@ -156,7 +167,6 @@ private fun BerandaContent(
     onProfileTabClick: () -> Unit,
     onNotificationClick: () -> Unit
 ) {
-    var searchQuery by remember { mutableStateOf("") }
     val scrollState = rememberScrollState()
 
     Column(
@@ -186,7 +196,7 @@ private fun BerandaContent(
                     modifier = Modifier
                         .size(38.dp)
                         .background(
-                            color = ArenovaPrimaryGreen,
+                            brush = RevoraGreenGradient,
                             shape = RoundedCornerShape(11.dp)
                         ),
                     contentAlignment = Alignment.Center
@@ -233,12 +243,12 @@ private fun BerandaContent(
                     )
                 }
 
-                // Tombol Profil Bulat Hijau
+                // Tombol Profil Bulat Hijau (Sesuai gaya profil di tampilan sebelumnya)
                 Box(
                     modifier = Modifier
                         .size(36.dp)
                         .background(
-                            color = ArenovaPrimaryGreen,
+                            brush = RevoraGreenGradient,
                             shape = CircleShape
                         )
                         .clip(CircleShape)
@@ -286,161 +296,7 @@ private fun BerandaContent(
 
         }
 
-        Spacer(modifier = Modifier.height(22.dp))
-
-        // ==========================================
-        // SEARCH BAR & FILTER
-        // ==========================================
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp),
-            shape = RoundedCornerShape(16.dp),
-            color = Color.White,
-            shadowElevation = 1.dp
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_search),
-                    contentDescription = "Cari",
-                    tint = ArenovaPlaceholderGray,
-                    modifier = Modifier.size(20.dp)
-                )
-
-                Spacer(modifier = Modifier.width(10.dp))
-
-                Box(
-                    modifier = Modifier.weight(1f),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    if (searchQuery.isEmpty()) {
-                        Text(
-                            text = "Cari lapangan...",
-                            color = ArenovaPlaceholderGray,
-                            fontSize = 14.sp
-                        )
-                    }
-                    BasicTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        singleLine = true,
-                        textStyle = TextStyle(
-                            fontSize = 14.sp,
-                            color = ArenovaDarkText
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-                // Tombol Filter di kanan search bar
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .background(
-                            color = Color(0xFFEFF3F8),
-                            shape = RoundedCornerShape(10.dp)
-                        )
-                        .clickable { /* Filter Action */ },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_tune),
-                        contentDescription = "Filter",
-                        tint = ArenovaDarkText,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(18.dp))
-
-        // ==========================================
-        // CARD MAIN BARENG KOMUNITAS
-        // ==========================================
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onCommunityClick() },
-            shape = RoundedCornerShape(20.dp),
-            color = Color.White,
-            shadowElevation = 1.dp
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Ikon Komunitas (Squircle Hijau dengan Figure Biru)
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(
-                            color = ArenovaPrimaryGreen,
-                            shape = RoundedCornerShape(14.dp)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_community),
-                        contentDescription = null,
-                        tint = Color.Unspecified,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = "Main Bareng Komunitas",
-                        fontSize = 14.5.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = ArenovaDarkText,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "14 sesi terbuka di sekitarmu",
-                        fontSize = 12.sp,
-                        color = ArenovaSubtitleGray,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                // Tombol "Gabung"
-                Button(
-                    onClick = onCommunityClick,
-                    shape = RoundedCornerShape(20.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = ArenovaPrimaryGreen,
-                        contentColor = Color.White
-                    ),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
-                    modifier = Modifier.height(34.dp)
-                ) {
-                    Text(
-                        text = "Gabung",
-                        fontSize = 12.5.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(26.dp))
 
         // ==========================================
         // SECTION KATEGORI (4 Olahraga Populer)
@@ -461,7 +317,7 @@ private fun BerandaContent(
                 text = "4 Olahraga Populer",
                 fontSize = 12.5.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = ArenovaPrimaryGreen
+                color = RevoraGreenPrimary
             )
         }
 
@@ -686,7 +542,7 @@ private fun RiwayatContent(
                     modifier = Modifier
                         .size(38.dp)
                         .background(
-                            color = ArenovaPrimaryGreen,
+                            brush = RevoraGreenGradient,
                             shape = RoundedCornerShape(11.dp)
                         ),
                     contentAlignment = Alignment.Center
@@ -740,7 +596,7 @@ private fun RiwayatContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Filter chips baris horizontal
+        // Filter chips baris horizontal (Gaya tombol diselaraskan)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -749,14 +605,25 @@ private fun RiwayatContent(
                 val isSelected = selectedFilter == filter
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(
-                            if (isSelected) ArenovaPrimaryGreen else Color.White
+                        .shadow(
+                            elevation = if (isSelected) 2.dp else 0.dp,
+                            shape = RoundedCornerShape(20.dp),
+                            ambientColor = RevoraGreenPrimary.copy(alpha = 0.25f),
+                            spotColor = RevoraGreenPrimary.copy(alpha = 0.35f)
                         )
-                        .border(
-                            width = 1.dp,
-                            color = if (isSelected) ArenovaPrimaryGreen else Color(0xFFE2E8F0),
-                            shape = RoundedCornerShape(20.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .then(
+                            if (isSelected) {
+                                Modifier.background(brush = RevoraGreenGradient)
+                            } else {
+                                Modifier
+                                    .background(Color.White)
+                                    .border(
+                                        width = 1.dp,
+                                        color = Color(0xFFE2E8F0),
+                                        shape = RoundedCornerShape(20.dp)
+                                    )
+                            }
                         )
                         .clickable { selectedFilter = filter }
                         .padding(horizontal = 16.dp, vertical = 7.dp),
@@ -892,34 +759,52 @@ private fun BookingCard(
                         text = item.price,
                         fontSize = 14.5.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ArenovaPrimaryGreen
+                        color = RevoraGreenPrimary
                     )
                 }
 
                 if (item.status == "Berlangsung") {
+                    // Tombol "Lihat Tiket" (Gradasi hijau konsisten)
                     Button(
                         onClick = onActionClick,
+                        modifier = Modifier
+                            .height(34.dp)
+                            .shadow(
+                                elevation = 2.dp,
+                                shape = RoundedCornerShape(12.dp),
+                                ambientColor = RevoraGreenPrimary.copy(alpha = 0.35f),
+                                spotColor = RevoraGreenPrimary.copy(alpha = 0.45f)
+                            ),
                         shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(0.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = ArenovaPrimaryGreen,
+                            containerColor = Color.Transparent,
                             contentColor = Color.White
-                        ),
-                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-                        modifier = Modifier.height(34.dp)
-                    ) {
-                        Text(
-                            text = "Lihat Tiket",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
                         )
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .background(brush = RevoraGreenGradient)
+                                .padding(horizontal = 14.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Lihat Tiket",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
                     }
                 } else {
+                    // Tombol "Pesan Lagi" (Border hijau konsisten)
                     OutlinedButton(
                         onClick = onActionClick,
                         shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, ArenovaPrimaryGreen),
+                        border = BorderStroke(1.2.dp, RevoraGreenPrimary),
                         colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = ArenovaPrimaryGreen
+                            contentColor = RevoraGreenPrimary
                         ),
                         contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                         modifier = Modifier.height(34.dp)
@@ -927,7 +812,8 @@ private fun BookingCard(
                         Text(
                             text = "Pesan Lagi",
                             fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = RevoraGreenPrimary
                         )
                     }
                 }
@@ -970,7 +856,7 @@ private fun ProfilContent(
                     modifier = Modifier
                         .size(38.dp)
                         .background(
-                            color = ArenovaPrimaryGreen,
+                            brush = RevoraGreenGradient,
                             shape = RoundedCornerShape(11.dp)
                         ),
                     contentAlignment = Alignment.Center
@@ -1091,7 +977,7 @@ private fun ProfilContent(
                 Box(
                     modifier = Modifier
                         .background(
-                            color = Color(0xFFDCFCE7),
+                            color = RevoraGreenSoftBg,
                             shape = RoundedCornerShape(20.dp)
                         )
                         .padding(horizontal = 12.dp, vertical = 4.dp)
@@ -1100,7 +986,7 @@ private fun ProfilContent(
                         text = "Member Aktif Arenova",
                         fontSize = 11.5.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = ArenovaPrimaryGreen
+                        color = RevoraGreenPrimary
                     )
                 }
 
@@ -1162,13 +1048,14 @@ private fun ProfilContent(
 
         // ==========================================
         // TOMBOL LOGOUT (KELUAR DARI AKUN)
+        // Ukuran dan sudut membulat diselaraskan dengan tombol full-width di tampilan sebelumnya (52.dp, 14.dp)
         // ==========================================
         Button(
             onClick = onLogoutClick,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(16.dp),
+                .height(52.dp),
+            shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFFFFEBEB),
                 contentColor = ArenovaErrorRed
@@ -1176,8 +1063,9 @@ private fun ProfilContent(
         ) {
             Text(
                 text = "Keluar dari Akun",
-                fontSize = 14.5.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
+                letterSpacing = 0.5.sp,
                 color = ArenovaErrorRed
             )
         }
@@ -1321,7 +1209,7 @@ private fun BottomNavItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val activeColor = ArenovaPrimaryGreen
+    val activeColor = RevoraGreenPrimary
     val inactiveColor = Color(0xFF475569) // Warna abu-abu slate seperti pada gambar desain
 
     val itemColor = if (isSelected) activeColor else inactiveColor
