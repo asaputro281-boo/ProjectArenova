@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import com.google.firebase.auth.FirebaseAuth
 import com.example.arenova.ui.screens.ArenovaSplashScreen
 import com.example.arenova.ui.screens.BadmintonListScreen
 import com.example.arenova.ui.screens.DashboardScreen
@@ -53,6 +54,8 @@ class MainActivity : ComponentActivity() {
                 var registeredPassword by remember { mutableStateOf("") }
                 var resetEmailTarget by remember { mutableStateOf("user@email.com") }
                 var isLoginFailed by remember { mutableStateOf(false) }
+                var isLoginLoading by remember { mutableStateOf(false) }
+                var loginErrorMessage by remember { mutableStateOf("Email atau password salah") }
 
                 Crossfade(
                     targetState = currentScreen,
@@ -73,37 +76,38 @@ class MainActivity : ComponentActivity() {
                         ArenovaScreen.LOGIN -> {
                             LoginScreen(
                                 isError = isLoginFailed,
+                                errorMessage = loginErrorMessage,
+                                isLoading = isLoginLoading,
                                 onDismissError = { isLoginFailed = false },
                                 onLoginClick = { email, pass ->
                                     val trimmedEmail = email.trim()
-                                    // Validasi: cocok dengan akun yang didaftarkan atau akun demo
+                                    val trimmedPass = pass.trim()
+
+                                    if (trimmedEmail.isBlank() || trimmedPass.isBlank()) {
+                                        isLoginFailed = true
+                                        loginErrorMessage = "Email dan kata sandi tidak boleh kosong"
+                                        return@LoginScreen
+                                    }
+
+                                    // Fallback akun lokal / demo untuk pengetesan offline
                                     val isValidRegistered = registeredEmail.isNotBlank() &&
                                             trimmedEmail.equals(registeredEmail.trim(), ignoreCase = true) &&
-                                            pass == registeredPassword
+                                            trimmedPass == registeredPassword
                                     val isDemoAdmin = trimmedEmail.equals("admin@arenova.id", ignoreCase = true) &&
-                                            (pass == "123456" || pass == "admin123")
+                                            (trimmedPass == "123456" || trimmedPass == "admin123")
                                     val isDemoUser = trimmedEmail.equals("user@arenova.id", ignoreCase = true) &&
-                                            pass == "123456"
-                                    val isQuickPass = pass == "123456" && trimmedEmail.contains("@")
+                                            trimmedPass == "123456"
 
-                                    if (email.isBlank() || pass.isBlank() ||
-                                        (!isValidRegistered && !isDemoAdmin && !isDemoUser && !isQuickPass)
-                                    ) {
-                                        // LOGIN GAGAL: Aktifkan tampilan banner & penanda error
-                                        isLoginFailed = true
-                                    } else {
-                                        // LOGIN BERHASIL
+                                    if (isValidRegistered || isDemoAdmin || isDemoUser) {
                                         isLoginFailed = false
-                                        if (currentUserName == "Pengguna") {
-                                            val extracted = trimmedEmail.substringBefore("@")
+                                        currentUserName = when {
+                                            isDemoAdmin -> "Admin Arenova"
+                                            isDemoUser -> "User Demo"
+                                            currentUserName != "Pengguna" -> currentUserName
+                                            else -> trimmedEmail.substringBefore("@")
                                                 .replace(".", " ")
                                                 .split(" ")
-                                                .joinToString(" ") { word ->
-                                                    word.replaceFirstChar { char -> char.uppercase() }
-                                                }
-                                            if (extracted.isNotBlank()) {
-                                                currentUserName = extracted
-                                            }
+                                                .joinToString(" ") { word -> word.replaceFirstChar { char -> char.uppercase() } }
                                         }
 
                                         Toast.makeText(
@@ -111,9 +115,58 @@ class MainActivity : ComponentActivity() {
                                             "Berhasil masuk! Selamat datang, $currentUserName",
                                             Toast.LENGTH_SHORT
                                         ).show()
-
-                                        // Navigasi ke Dashboard
                                         currentScreen = ArenovaScreen.DASHBOARD
+                                        return@LoginScreen
+                                    }
+
+                                    // Login melalui Firebase Authentication
+                                    isLoginLoading = true
+                                    isLoginFailed = false
+
+                                    try {
+                                        val auth = FirebaseAuth.getInstance()
+                                        auth.signInWithEmailAndPassword(trimmedEmail, trimmedPass)
+                                            .addOnCompleteListener { task ->
+                                                isLoginLoading = false
+                                                if (task.isSuccessful) {
+                                                    isLoginFailed = false
+                                                    val firebaseUser = auth.currentUser
+                                                    val displayName = firebaseUser?.displayName
+                                                    currentUserName = if (!displayName.isNullOrBlank()) {
+                                                        displayName
+                                                    } else {
+                                                        trimmedEmail.substringBefore("@")
+                                                            .replace(".", " ")
+                                                            .split(" ")
+                                                            .joinToString(" ") { word -> word.replaceFirstChar { char -> char.uppercase() } }
+                                                    }
+
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Berhasil masuk! Selamat datang, $currentUserName",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+
+                                                    // Navigasi ke Dashboard
+                                                    currentScreen = ArenovaScreen.DASHBOARD
+                                                } else {
+                                                    isLoginFailed = true
+                                                    val rawMsg = task.exception?.localizedMessage ?: ""
+                                                    loginErrorMessage = when {
+                                                        rawMsg.contains("no user record", ignoreCase = true) ||
+                                                        rawMsg.contains("INVALID_LOGIN_CREDENTIALS", ignoreCase = true) ||
+                                                        rawMsg.contains("password is invalid", ignoreCase = true) ->
+                                                            "Email atau password salah / belum terdaftar"
+                                                        rawMsg.contains("network", ignoreCase = true) ->
+                                                            "Gagal terhubung: Periksa koneksi internet Anda"
+                                                        else -> rawMsg.ifBlank { "Email atau password salah" }
+                                                    }
+                                                }
+                                            }
+                                    } catch (e: Exception) {
+                                        isLoginLoading = false
+                                        isLoginFailed = true
+                                        loginErrorMessage = e.localizedMessage ?: "Terjadi kesalahan saat masuk"
                                     }
                                 },
                                 onForgotPasswordClick = {
@@ -335,6 +388,9 @@ class MainActivity : ComponentActivity() {
                                     ).show()
                                 },
                                 onLogoutClick = {
+                                    try {
+                                        FirebaseAuth.getInstance().signOut()
+                                    } catch (_: Exception) {}
                                     Toast.makeText(
                                         context,
                                         "Berhasil keluar dari akun $currentUserName",

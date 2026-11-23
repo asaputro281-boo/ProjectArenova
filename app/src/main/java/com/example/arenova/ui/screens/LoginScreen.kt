@@ -32,6 +32,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -94,6 +95,7 @@ fun LoginScreen(
     onDismissError: () -> Unit = {},
     isError: Boolean? = null,
     errorMessage: String = "Email atau password salah",
+    isLoading: Boolean = false,
     initialShowError: Boolean = false,
     modifier: Modifier = Modifier
 ) {
@@ -119,6 +121,7 @@ fun LoginScreen(
     val scrollState = rememberScrollState()
 
     fun performLogin() {
+        if (isLoading) return
         focusManager.clearFocus()
         if (email.isBlank() || password.isBlank()) {
             internalError = true
@@ -420,6 +423,7 @@ fun LoginScreen(
                     // --- TOMBOL MASUK (DENGAN GRADASI HIJAU REFERENSI) ---
                     Button(
                         onClick = { performLogin() },
+                        enabled = !isLoading,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
@@ -427,7 +431,9 @@ fun LoginScreen(
                         contentPadding = PaddingValues(0.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Transparent,
-                            contentColor = Color.White
+                            contentColor = Color.White,
+                            disabledContainerColor = RevoraGreenPrimary.copy(alpha = 0.6f),
+                            disabledContentColor = Color.White
                         )
                     ) {
                         Box(
@@ -436,12 +442,20 @@ fun LoginScreen(
                                 .background(brush = RevoraGreenGradient),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "MASUK",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 0.5.sp
-                            )
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    color = Color.White,
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.5.dp
+                                )
+                            } else {
+                                Text(
+                                    text = "MASUK",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 0.5.sp
+                                )
+                            }
                         }
                     }
 
