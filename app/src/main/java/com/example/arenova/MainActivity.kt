@@ -19,6 +19,7 @@ import com.example.arenova.ui.screens.DashboardScreen
 import com.example.arenova.ui.screens.ForgotPasswordScreen
 import com.example.arenova.ui.screens.LoginScreen
 import com.example.arenova.ui.screens.OtpVerificationScreen
+import com.example.arenova.ui.screens.PasswordChangedSuccessScreen
 import com.example.arenova.ui.screens.RegisterScreen
 import com.example.arenova.ui.screens.RegisterSuccessScreen
 import com.example.arenova.ui.screens.ResetPasswordScreen
@@ -32,6 +33,7 @@ enum class ArenovaScreen {
     FORGOT_PASSWORD,
     OTP_VERIFICATION,
     RESET_PASSWORD,
+    PASSWORD_CHANGED_SUCCESS,
     DASHBOARD
 }
 
@@ -264,17 +266,35 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onPasswordResetSuccess = { newPassword ->
                                     registeredPassword = newPassword
-                                    Toast.makeText(
-                                        context,
-                                        "Sandi berhasil diperbarui! Silakan masuk dengan sandi baru.",
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                    currentScreen = ArenovaScreen.LOGIN
+                                    // Navigasi ke Layar Berhasil Ubah Sandi (sesuai instruksi pengguna)
+                                    currentScreen = ArenovaScreen.PASSWORD_CHANGED_SUCCESS
                                 },
                                 onProfileClick = {
                                     Toast.makeText(
                                         context,
                                         "Pusat Akun Arenova",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            )
+                        }
+
+                        // 8. PASSWORD CHANGED SUCCESS SCREEN (Sandi Berhasil Diubah)
+                        ArenovaScreen.PASSWORD_CHANGED_SUCCESS -> {
+                            PasswordChangedSuccessScreen(
+                                onLoginClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Silakan masuk dengan sandi baru Anda",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    // Dari layar sukses -> langsung menuju ke Login Screen
+                                    currentScreen = ArenovaScreen.LOGIN
+                                },
+                                onHelpClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Pusat Bantuan Arenova: Hubungi cs@arenova.id",
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }

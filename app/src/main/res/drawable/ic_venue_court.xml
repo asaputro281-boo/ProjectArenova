@@ -1,0 +1,36 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Top radiating beams -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#0D9488"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M12,2v2.5M6.5,4l1.5,2M17.5,4l-1.5,2" />
+    <!-- Arena / stadium roof and building -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#0D9488"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M4,10h16v10a2,2 0 0,1 -2,2H6a2,2 0 0,1 -2,-2z" />
+    <!-- Curved roof top line -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#0D9488"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M3,10c0,-3 4,-4 9,-4s9,1 9,4" />
+    <!-- Center arch doorway / court net -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#0D9488"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M9.5,22v-6a2.5,2.5 0 0,1 5,0v6" />
+</vector>
