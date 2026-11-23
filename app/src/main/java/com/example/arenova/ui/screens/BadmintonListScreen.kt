@@ -1,6 +1,5 @@
 package com.example.arenova.ui.screens
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,10 +16,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -60,11 +57,9 @@ import com.example.arenova.ui.theme.ArenovaScreenBg
 import com.example.arenova.ui.theme.ArenovaSubtitleGray
 import com.example.arenova.ui.theme.ArenovaTheme
 
-// Palet warna hijau disamakan persis dengan seluruh tampilan sebelum-sebelumnya
 private val RevoraGreenStart = Color(0xFF43A047)
 private val RevoraGreenEnd = Color(0xFF2E7D32)
 private val RevoraGreenPrimary = Color(0xFF388E3C)
-private val RevoraGreenSoftBg = Color(0xFFE8F5E9)
 
 private val RevoraGreenGradient = Brush.horizontalGradient(
     colors = listOf(RevoraGreenStart, RevoraGreenEnd)
@@ -111,8 +106,9 @@ fun BadmintonListScreen(
                 imageRating = "4.8",
                 starRating = "4.8",
                 location = "Kebayoran Baru, Jakarta Selatan",
-                price = "Rp 50.000",
-                imageRes = R.drawable.img_futsal
+                price = "Rp 55.000",
+                imageRes = R.drawable.img_badminton1
+
             ),
             BadmintonCourtItem(
                 id = "3",
@@ -120,26 +116,23 @@ fun BadmintonListScreen(
                 imageRating = "4.7",
                 starRating = "4.7",
                 location = "Kebayoran Baru, Jakarta Selatan",
-                price = "Rp 55.000",
-                imageRes = R.drawable.img_badminton
+                price = "Rp 50.000",
+                imageRes = R.drawable.img_badminton2
             ),
             BadmintonCourtItem(
                 id = "4",
                 name = "Lapangan 4",
-                imageRating = "4.9",
+                imageRating = "4.6",
                 starRating = "4.6",
                 location = "Kebayoran Baru, Jakarta Selatan",
-                price = "Rp 70.000",
-                imageRes = R.drawable.img_padel
+                price = "Rp 40.000",
+                imageRes = R.drawable.img_badminton3
             )
         )
     }
 
     Scaffold(
-        modifier = modifier
-            .fillMaxSize()
-            .background(ArenovaScreenBg)
-            .statusBarsPadding(),
+        modifier = modifier.fillMaxSize(),
         containerColor = ArenovaScreenBg,
         bottomBar = {
             BadmintonBottomNavigation(
@@ -154,7 +147,7 @@ fun BadmintonListScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = innerPadding.calculateBottomPadding())
+                .padding(innerPadding)
                 .padding(horizontal = 20.dp)
         ) {
             Spacer(modifier = Modifier.height(10.dp))
@@ -169,7 +162,6 @@ fun BadmintonListScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Kiri: Logo Kotak Hijau + Teks "Beranda"
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
@@ -198,7 +190,6 @@ fun BadmintonListScreen(
                     )
                 }
 
-                // Kanan: Ikon Lonceng Notifikasi & Ikon Pengguna
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(14.dp)
@@ -254,7 +245,6 @@ fun BadmintonListScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Tombol Back
                 IconButton(
                     onClick = onBackClick,
                     modifier = Modifier.size(36.dp)
@@ -278,18 +268,16 @@ fun BadmintonListScreen(
                     )
                     Spacer(modifier = Modifier.height(1.dp))
                     Text(
-                        text = "4 venue tersedia di sekitarmu",
+                        text = "4 Lapangan tersedia di sekitarmu",
                         fontSize = 12.5.sp,
                         color = ArenovaSubtitleGray
                     )
                 }
 
-                // Tombol Filter & Sort
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Tombol Filter (Tune)
                     Box(
                         modifier = Modifier
                             .size(38.dp)
@@ -308,7 +296,6 @@ fun BadmintonListScreen(
                         )
                     }
 
-                    // Tombol Sort (Up & Down Arrows)
                     Box(
                         modifier = Modifier
                             .size(38.dp)
@@ -332,11 +319,10 @@ fun BadmintonListScreen(
             Spacer(modifier = Modifier.height(18.dp))
 
             // ==========================================
-            // 3. FILTER CHIPS (Hari Ini, Karpet Li-Ning, Indoor AC)
+            // 3. FILTER CHIPS
             // ==========================================
             val filterChips = listOf(
                 FilterChipData("Hari Ini", R.drawable.ic_calendar),
-                FilterChipData("Karpet Li-Ning", R.drawable.ic_verified_badge),
                 FilterChipData("Indoor AC", R.drawable.ic_ac)
             )
 
@@ -408,11 +394,13 @@ fun BadmintonListScreen(
             // 4. DAFTAR KARTU LAPANGAN BADMINTON
             // ==========================================
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
-                contentPadding = PaddingValues(bottom = 20.dp)
+                contentPadding = PaddingValues(bottom = 16.dp)
             ) {
-                items(courts) { court ->
+                items(courts, key = { it.id }) { court ->
                     BadmintonCourtCard(
                         court = court,
                         onBookClick = { onBookCourtClick(court) }
@@ -428,9 +416,6 @@ private data class FilterChipData(
     val iconRes: Int
 )
 
-/**
- * Kartu Lapangan Badminton individual
- */
 @Composable
 private fun BadmintonCourtCard(
     court: BadmintonCourtItem,
@@ -448,7 +433,6 @@ private fun BadmintonCourtCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Gambar Lapangan + Badge Rating di Atas Kiri Gambar
             Box(
                 modifier = Modifier
                     .size(105.dp)
@@ -461,7 +445,6 @@ private fun BadmintonCourtCard(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // Badge Rating di Pojok Kiri Atas Gambar
                 Box(
                     modifier = Modifier
                         .padding(start = 6.dp, top = 6.dp)
@@ -493,11 +476,9 @@ private fun BadmintonCourtCard(
 
             Spacer(modifier = Modifier.width(14.dp))
 
-            // Kolom Informasi Lapangan & Tombol Pesan
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                // Baris Judul & Rating Star Kanan
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -531,7 +512,6 @@ private fun BadmintonCourtCard(
 
                 Spacer(modifier = Modifier.height(5.dp))
 
-                // Lokasi Lapangan
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -553,13 +533,11 @@ private fun BadmintonCourtCard(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Harga & Tombol "Pesan"
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Harga per jam (Warna oranye khas tiket/booking)
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(
                             text = court.price,
@@ -575,7 +553,6 @@ private fun BadmintonCourtCard(
                         )
                     }
 
-                    // Tombol "Pesan" (Diselaraskan dengan gaya tombol tampilan sebelumnya)
                     Button(
                         onClick = onBookClick,
                         modifier = Modifier
@@ -614,18 +591,13 @@ private fun BadmintonCourtCard(
     }
 }
 
-/**
- * Bottom Navigation Bar untuk Badminton Screen
- */
 @Composable
 private fun BadmintonBottomNavigation(
     selectedTab: DashboardTab,
     onTabSelected: (DashboardTab) -> Unit
 ) {
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .navigationBarsPadding(),
+        modifier = Modifier.fillMaxWidth(),
         color = Color.White,
         shadowElevation = 8.dp
     ) {
@@ -687,7 +659,6 @@ private fun BadmintonBottomNavItem(
 ) {
     val activeColor = RevoraGreenPrimary
     val inactiveColor = Color(0xFF475569)
-
     val itemColor = if (isSelected) activeColor else inactiveColor
 
     Column(

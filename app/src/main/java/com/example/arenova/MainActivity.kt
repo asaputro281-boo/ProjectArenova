@@ -1,6 +1,7 @@
 package com.example.arenova
 
 import android.os.Bundle
+import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,7 +15,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import com.google.firebase.auth.FirebaseAuth
 import com.example.arenova.ui.screens.ArenovaSplashScreen
 import com.example.arenova.ui.screens.BadmintonListScreen
 import com.example.arenova.ui.screens.DashboardScreen
@@ -27,6 +27,7 @@ import com.example.arenova.ui.screens.RegisterScreen
 import com.example.arenova.ui.screens.RegisterSuccessScreen
 import com.example.arenova.ui.screens.ResetPasswordScreen
 import com.example.arenova.ui.theme.ArenovaTheme
+import com.google.firebase.auth.FirebaseAuth
 
 enum class ArenovaScreen {
     SPLASH,
@@ -48,14 +49,30 @@ class MainActivity : ComponentActivity() {
         setContent {
             ArenovaTheme {
                 val context = LocalContext.current
+                // Mulai dari Splash Screen
                 var currentScreen by remember { mutableStateOf(ArenovaScreen.SPLASH) }
-                var currentUserName by remember { mutableStateOf("Pengguna") }
+                var currentUserName by remember { mutableStateOf("Angga Dwi Saputro") }
                 var registeredEmail by remember { mutableStateOf("") }
                 var registeredPassword by remember { mutableStateOf("") }
                 var resetEmailTarget by remember { mutableStateOf("user@email.com") }
                 var isLoginFailed by remember { mutableStateOf(false) }
                 var isLoginLoading by remember { mutableStateOf(false) }
                 var loginErrorMessage by remember { mutableStateOf("Email atau password salah") }
+
+                fun logoutToLogin() {
+                    try {
+                        FirebaseAuth.getInstance().signOut()
+                    } catch (_: Exception) {
+                    }
+                    isLoginFailed = false
+                    isLoginLoading = false
+                    currentScreen = ArenovaScreen.LOGIN
+                    Toast.makeText(
+                        context,
+                        "Berhasil keluar dari akun",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
 
                 Crossfade(
                     targetState = currentScreen,
@@ -89,6 +106,12 @@ class MainActivity : ComponentActivity() {
                                         return@LoginScreen
                                     }
 
+                                    if (!Patterns.EMAIL_ADDRESS.matcher(trimmedEmail).matches()) {
+                                        isLoginFailed = true
+                                        loginErrorMessage = "Format email tidak valid. Gunakan format seperti nama@email.com"
+                                        return@LoginScreen
+                                    }
+
                                     // Fallback akun lokal / demo untuk pengetesan offline
                                     val isValidRegistered = registeredEmail.isNotBlank() &&
                                             trimmedEmail.equals(registeredEmail.trim(), ignoreCase = true) &&
@@ -103,11 +126,13 @@ class MainActivity : ComponentActivity() {
                                         currentUserName = when {
                                             isDemoAdmin -> "Admin Arenova"
                                             isDemoUser -> "User Demo"
-                                            currentUserName != "Pengguna" -> currentUserName
+                                            currentUserName.isNotBlank() -> currentUserName
                                             else -> trimmedEmail.substringBefore("@")
                                                 .replace(".", " ")
                                                 .split(" ")
-                                                .joinToString(" ") { word -> word.replaceFirstChar { char -> char.uppercase() } }
+                                                .joinToString(" ") { word ->
+                                                    word.replaceFirstChar { char -> char.uppercase() }
+                                                }
                                         }
 
                                         Toast.makeText(
@@ -138,7 +163,9 @@ class MainActivity : ComponentActivity() {
                                                         trimmedEmail.substringBefore("@")
                                                             .replace(".", " ")
                                                             .split(" ")
-                                                            .joinToString(" ") { word -> word.replaceFirstChar { char -> char.uppercase() } }
+                                                            .joinToString(" ") { word ->
+                                                                word.replaceFirstChar { char -> char.uppercase() }
+                                                            }
                                                     }
 
                                                     Toast.makeText(
@@ -147,36 +174,40 @@ class MainActivity : ComponentActivity() {
                                                         Toast.LENGTH_SHORT
                                                     ).show()
 
-                                                    // Navigasi ke Dashboard
                                                     currentScreen = ArenovaScreen.DASHBOARD
                                                 } else {
                                                     isLoginFailed = true
                                                     val rawMsg = task.exception?.localizedMessage ?: ""
                                                     loginErrorMessage = when {
+                                                        rawMsg.contains("badly formatted", ignoreCase = true) ->
+                                                            "Format email tidak valid. Gunakan format seperti nama@email.com"
                                                         rawMsg.contains("no user record", ignoreCase = true) ||
-                                                        rawMsg.contains("INVALID_LOGIN_CREDENTIALS", ignoreCase = true) ||
-                                                        rawMsg.contains("password is invalid", ignoreCase = true) ->
+                                                                rawMsg.contains("INVALID_LOGIN_CREDENTIALS", ignoreCase = true) ||
+                                                                rawMsg.contains("password is invalid", ignoreCase = true) ->
                                                             "Email atau password salah / belum terdaftar"
                                                         rawMsg.contains("network", ignoreCase = true) ->
                                                             "Gagal terhubung: Periksa koneksi internet Anda"
-                                                        else -> rawMsg.ifBlank { "Email atau password salah" }
+                                                        else -> "Email atau password salah"
                                                     }
                                                 }
                                             }
                                     } catch (e: Exception) {
                                         isLoginLoading = false
                                         isLoginFailed = true
-                                        loginErrorMessage = e.localizedMessage ?: "Terjadi kesalahan saat masuk"
+                                        val rawErr = e.localizedMessage ?: ""
+                                        loginErrorMessage = if (rawErr.contains("badly formatted", ignoreCase = true)) {
+                                            "Format email tidak valid. Gunakan format seperti nama@email.com"
+                                        } else {
+                                            "Terjadi kesalahan saat masuk"
+                                        }
                                     }
                                 },
                                 onForgotPasswordClick = {
                                     isLoginFailed = false
-                                    // Navigasi ke Tampilan Lupa Sandi
                                     currentScreen = ArenovaScreen.FORGOT_PASSWORD
                                 },
                                 onRegisterClick = {
                                     isLoginFailed = false
-                                    // Navigasi ke Register Screen
                                     currentScreen = ArenovaScreen.REGISTER
                                 }
                             )
@@ -185,6 +216,7 @@ class MainActivity : ComponentActivity() {
                         // 3. REGISTER SCREEN (Pembuatan Akun)
                         ArenovaScreen.REGISTER -> {
                             RegisterScreen(
+                                initialShowError = false,
                                 onBackClick = {
                                     currentScreen = ArenovaScreen.LOGIN
                                 },
@@ -198,7 +230,6 @@ class MainActivity : ComponentActivity() {
                                         currentUserName = nama
                                     }
                                     isLoginFailed = false
-                                    // Berhasil buat akun -> langsung ke Layar Registrasi Sukses
                                     currentScreen = ArenovaScreen.REGISTER_SUCCESS
                                 },
                                 onSupportClick = {
@@ -215,7 +246,6 @@ class MainActivity : ComponentActivity() {
                         ArenovaScreen.REGISTER_SUCCESS -> {
                             RegisterSuccessScreen(
                                 onLoginClick = {
-                                    // Dari layar registrasi sukses -> langsung ke Dashboard Menu
                                     Toast.makeText(
                                         context,
                                         "Selamat datang di Arenova, $currentUserName!",
@@ -254,7 +284,6 @@ class MainActivity : ComponentActivity() {
                                     val isArenovaEmail = trimmed.endsWith("@arenova.id", ignoreCase = true)
 
                                     if (isRegistered || isDemoAdmin || isDemoUser || isArenovaEmail) {
-                                        // Email terdaftar -> lanjut ke Verifikasi OTP
                                         onNotRegistered(false)
                                         resetEmailTarget = trimmed
                                         Toast.makeText(
@@ -264,7 +293,6 @@ class MainActivity : ComponentActivity() {
                                         ).show()
                                         currentScreen = ArenovaScreen.OTP_VERIFICATION
                                     } else {
-                                        // Email belum terdaftar di sistem -> aktifkan tampilan error
                                         onNotRegistered(true)
                                     }
                                 },
@@ -295,13 +323,12 @@ class MainActivity : ComponentActivity() {
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 },
-                                onVerificationSuccess = { code ->
+                                onVerificationSuccess = { _ ->
                                     Toast.makeText(
                                         context,
                                         "Verifikasi Berhasil! Silakan atur sandi baru.",
                                         Toast.LENGTH_SHORT
                                     ).show()
-                                    // Berpindah ke tampilan Buat Sandi Baru (Reset Password)
                                     currentScreen = ArenovaScreen.RESET_PASSWORD
                                 },
                                 onProfileClick = {
@@ -322,7 +349,6 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onPasswordResetSuccess = { newPassword ->
                                     registeredPassword = newPassword
-                                    // Navigasi ke Layar Berhasil Ubah Sandi (sesuai instruksi pengguna)
                                     currentScreen = ArenovaScreen.PASSWORD_CHANGED_SUCCESS
                                 },
                                 onProfileClick = {
@@ -344,7 +370,6 @@ class MainActivity : ComponentActivity() {
                                         "Silakan masuk dengan sandi baru Anda",
                                         Toast.LENGTH_SHORT
                                     ).show()
-                                    // Dari layar sukses -> langsung menuju ke Login Screen
                                     currentScreen = ArenovaScreen.LOGIN
                                 },
                                 onHelpClick = {
@@ -357,13 +382,12 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // 6. DASHBOARD SCREEN (Menu Utama Lapangan & Komunitas)
+                        // 9. DASHBOARD SCREEN (Menu Utama Lapangan & Komunitas)
                         ArenovaScreen.DASHBOARD -> {
                             DashboardScreen(
                                 userName = currentUserName,
                                 onCategoryClick = { category ->
                                     if (category.equals("Badminton", ignoreCase = true)) {
-                                        // Navigasi ke Layar Daftar Lapangan Badminton
                                         currentScreen = ArenovaScreen.BADMINTON_LIST
                                     } else {
                                         Toast.makeText(
@@ -380,28 +404,13 @@ class MainActivity : ComponentActivity() {
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 },
-                                onNotificationClick = {
-                                    Toast.makeText(
-                                        context,
-                                        "Belum ada notifikasi baru",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                },
-                                onLogoutClick = {
-                                    try {
-                                        FirebaseAuth.getInstance().signOut()
-                                    } catch (_: Exception) {}
-                                    Toast.makeText(
-                                        context,
-                                        "Berhasil keluar dari akun $currentUserName",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                    currentScreen = ArenovaScreen.LOGIN
+                                onProfileClick = {
+                                    logoutToLogin()
                                 }
                             )
                         }
 
-                        // 7. BADMINTON COURT LIST SCREEN (Daftar Lapangan Badminton)
+                        // 10. BADMINTON COURT LIST SCREEN (Daftar Lapangan Badminton)
                         ArenovaScreen.BADMINTON_LIST -> {
                             BadmintonListScreen(
                                 onBackClick = {
@@ -415,11 +424,7 @@ class MainActivity : ComponentActivity() {
                                     ).show()
                                 },
                                 onProfileClick = {
-                                    Toast.makeText(
-                                        context,
-                                        "Profil $currentUserName",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    logoutToLogin()
                                 },
                                 onFilterClick = {
                                     Toast.makeText(
@@ -447,8 +452,15 @@ class MainActivity : ComponentActivity() {
                                         DashboardTab.BERANDA -> {
                                             currentScreen = ArenovaScreen.DASHBOARD
                                         }
-                                        DashboardTab.RIWAYAT, DashboardTab.PROFIL -> {
-                                            currentScreen = ArenovaScreen.DASHBOARD
+                                        DashboardTab.RIWAYAT -> {
+                                            Toast.makeText(
+                                                context,
+                                                "Membuka riwayat pemesanan",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                        DashboardTab.PROFIL -> {
+                                            logoutToLogin()
                                         }
                                     }
                                 }
@@ -465,6 +477,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainAppPreview() {
     ArenovaTheme {
-        DashboardScreen()
+        ArenovaSplashScreen(onNavigateNext = {})
     }
 }
