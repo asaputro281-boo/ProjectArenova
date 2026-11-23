@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.arenova.data.model.UserModel
 import com.example.arenova.ui.screens.ArenovaSplashScreen
 import com.example.arenova.ui.screens.BadmintonListScreen
 import com.example.arenova.ui.screens.DashboardScreen
@@ -28,6 +29,10 @@ import com.example.arenova.ui.screens.RegisterSuccessScreen
 import com.example.arenova.ui.screens.ResetPasswordScreen
 import com.example.arenova.ui.theme.ArenovaTheme
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import com.google.firebase.auth.UserProfileChangeRequest
+import com.google.firebase.firestore.FirebaseFirestore
 
 enum class ArenovaScreen {
     SPLASH,
@@ -58,6 +63,9 @@ class MainActivity : ComponentActivity() {
                 var isLoginFailed by remember { mutableStateOf(false) }
                 var isLoginLoading by remember { mutableStateOf(false) }
                 var loginErrorMessage by remember { mutableStateOf("Email atau password salah") }
+                var isRegisterFailed by remember { mutableStateOf(false) }
+                var isRegisterLoading by remember { mutableStateOf(false) }
+                var registerErrorMessage by remember { mutableStateOf("Gagal melakukan registrasi") }
 
                 fun logoutToLogin() {
                     try {
@@ -157,15 +165,24 @@ class MainActivity : ComponentActivity() {
                                                     isLoginFailed = false
                                                     val firebaseUser = auth.currentUser
                                                     val displayName = firebaseUser?.displayName
-                                                    currentUserName = if (!displayName.isNullOrBlank()) {
-                                                        displayName
-                                                    } else {
-                                                        trimmedEmail.substringBefore("@")
-                                                            .replace(".", " ")
-                                                            .split(" ")
-                                                            .joinToString(" ") { word ->
-                                                                word.replaceFirstChar { char -> char.uppercase() }
-                                                            }
+                                                    val uid = firebaseUser?.uid
+                                                    val fallbackName = trimmedEmail.substringBefore("@")
+                                                        .replace(".", " ")
+                                                        .split(" ")
+                                                        .joinToString(" ") { word -> word.replaceFirstChar { char -> char.uppercase() } }
+
+                                                    currentUserName = if (!displayName.isNullOrBlank()) displayName else fallbackName
+
+                                                    if (uid != null) {
+                                                        try {
+                                                            FirebaseFirestore.getInstance().collection("users").document(uid).get()
+                                                                .addOnSuccessListener { doc ->
+                                                                    val nameInDb = doc.getString("fullName")
+                                                                    if (!nameInDb.isNullOrBlank()) {
+                                                                        currentUserName = nameInDb
+                                                                    }
+                                                                }
+                                                        } catch (_: Exception) {}
                                                     }
 
                                                     Toast.makeText(
@@ -208,29 +225,112 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onRegisterClick = {
                                     isLoginFailed = false
+                                    isRegisterFailed = false
                                     currentScreen = ArenovaScreen.REGISTER
                                 }
                             )
                         }
 
-                        // 3. REGISTER SCREEN (Pembuatan Akun)
+                        // 3. REGISTER SCREEN (Pembuatan Akun Terhubung Firebase Auth & Firestore)
                         ArenovaScreen.REGISTER -> {
                             RegisterScreen(
-                                initialShowError = false,
+                                isError = isRegisterFailed,
+                                errorMessage = registerErrorMessage,
+                                isLoading = isRegisterLoading,
                                 onBackClick = {
+                                    isRegisterFailed = false
                                     currentScreen = ArenovaScreen.LOGIN
                                 },
                                 onLoginClick = {
+                                    isRegisterFailed = false
                                     currentScreen = ArenovaScreen.LOGIN
                                 },
                                 onRegisterSuccess = { nama, email, pass ->
-                                    registeredEmail = email
-                                    registeredPassword = pass
-                                    if (nama.isNotBlank()) {
-                                        currentUserName = nama
+                                    val trimmedNama = nama.trim()
+                                    val trimmedEmail = email.trim()
+                                    val trimmedPass = pass.trim()
+
+                                    isRegisterLoading = true
+                                    isRegisterFailed = false
+
+                                    try {
+                                        val auth = FirebaseAuth.getInstance()
+                                        auth.createUserWithEmailAndPassword(trimmedEmail, trimmedPass)
+                                            .addOnCompleteListener { task ->
+                                                if (task.isSuccessful) {
+                                                    val firebaseUser = auth.currentUser
+                                                    val uid = firebaseUser?.uid ?: ""
+
+                                                    // Update Display Name di Firebase Auth
+                                                    try {
+                                                        val profileUpdates = UserProfileChangeRequest.Builder()
+                                                            .setDisplayName(trimmedNama)
+                                                            .build()
+                                                        firebaseUser?.updateProfile(profileUpdates)
+                                                    } catch (_: Exception) {}
+
+                                                    // Simpan Data Profil Pengguna ke Cloud Firestore
+                                                    val newUser = UserModel(
+                                                        uid = uid,
+                                                        fullName = trimmedNama,
+                                                        email = trimmedEmail,
+                                                        role = "member",
+                                                        arenaPoints = 250,
+                                                        totalMatches = 0,
+                                                        createdAt = System.currentTimeMillis()
+                                                    )
+
+                                                    try {
+                                                        val db = FirebaseFirestore.getInstance()
+                                                        db.collection("users").document(uid).set(newUser.toMap())
+                                                            .addOnCompleteListener { _ ->
+                                                                isRegisterLoading = false
+                                                                isRegisterFailed = false
+                                                                isLoginFailed = false
+                                                                registeredEmail = trimmedEmail
+                                                                registeredPassword = trimmedPass
+                                                                currentUserName = trimmedNama
+
+                                                                Toast.makeText(
+                                                                    context,
+                                                                    "Pendaftaran berhasil! Selamat datang di Arenova.",
+                                                                    Toast.LENGTH_SHORT
+                                                                ).show()
+
+                                                                currentScreen = ArenovaScreen.REGISTER_SUCCESS
+                                                            }
+                                                    } catch (_: Exception) {
+                                                        isRegisterLoading = false
+                                                        isRegisterFailed = false
+                                                        isLoginFailed = false
+                                                        registeredEmail = trimmedEmail
+                                                        registeredPassword = trimmedPass
+                                                        currentUserName = trimmedNama
+                                                        currentScreen = ArenovaScreen.REGISTER_SUCCESS
+                                                    }
+                                                } else {
+                                                    isRegisterLoading = false
+                                                    isRegisterFailed = true
+                                                    val ex = task.exception
+                                                    val rawMsg = ex?.localizedMessage ?: ""
+                                                    registerErrorMessage = when {
+                                                        ex is FirebaseAuthUserCollisionException ||
+                                                                rawMsg.contains("already in use", ignoreCase = true) ->
+                                                            "Email sudah terdaftar. Silakan gunakan email lain atau masuk."
+                                                        ex is FirebaseAuthWeakPasswordException ||
+                                                                rawMsg.contains("password", ignoreCase = true) ->
+                                                            "Kata sandi terlalu lemah. Gunakan minimal 6 karakter."
+                                                        rawMsg.contains("network", ignoreCase = true) ->
+                                                            "Gagal terhubung: Periksa koneksi internet Anda."
+                                                        else -> rawMsg.ifBlank { "Gagal melakukan registrasi" }
+                                                    }
+                                                }
+                                            }
+                                    } catch (e: Exception) {
+                                        isRegisterLoading = false
+                                        isRegisterFailed = true
+                                        registerErrorMessage = e.localizedMessage ?: "Terjadi kesalahan saat pendaftaran"
                                     }
-                                    isLoginFailed = false
-                                    currentScreen = ArenovaScreen.REGISTER_SUCCESS
                                 },
                                 onSupportClick = {
                                     Toast.makeText(
@@ -273,6 +373,7 @@ class MainActivity : ComponentActivity() {
                                     currentScreen = ArenovaScreen.LOGIN
                                 },
                                 onRegisterClick = {
+                                    isRegisterFailed = false
                                     currentScreen = ArenovaScreen.REGISTER
                                 },
                                 onSendCodeClick = { emailSent, onNotRegistered ->

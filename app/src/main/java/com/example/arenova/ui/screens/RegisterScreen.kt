@@ -32,6 +32,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -39,6 +40,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -90,6 +92,9 @@ fun RegisterScreen(
     onLoginClick: () -> Unit = {},
     onRegisterSuccess: (nama: String, email: String, pass: String) -> Unit = { _, _, _ -> },
     onSupportClick: () -> Unit = {},
+    isError: Boolean? = null,
+    errorMessage: String = "Terjadi kesalahan saat pendaftaran",
+    isLoading: Boolean = false,
     initialShowError: Boolean = false,
     modifier: Modifier = Modifier
 ) {
@@ -102,22 +107,42 @@ fun RegisterScreen(
     var konfirmasiPasswordVisible by remember { mutableStateOf(false) }
 
     var showErrorBanner by remember { mutableStateOf(initialShowError) }
-    var errorMessage by remember { mutableStateOf("Semua kolom wajib diisi") }
+    var localErrorMessage by remember { mutableStateOf("Semua kolom wajib diisi") }
+
+    LaunchedEffect(isError) {
+        if (isError != null) {
+            showErrorBanner = isError
+        }
+    }
+
+    val displayErrorMessage = if (isError == true) errorMessage else localErrorMessage
 
     val focusManager = LocalFocusManager.current
     val scrollState = rememberScrollState()
 
     fun handleRegister() {
+        if (isLoading) return
         focusManager.clearFocus()
-        if (namaLengkap.isBlank() || email.isBlank() || password.isBlank() || konfirmasiPassword.isBlank()) {
-            errorMessage = "Semua kolom wajib diisi"
+        val trimmedNama = namaLengkap.trim()
+        val trimmedEmail = email.trim()
+        val trimmedPass = password.trim()
+        val trimmedConfirm = konfirmasiPassword.trim()
+
+        if (trimmedNama.isBlank() || trimmedEmail.isBlank() || trimmedPass.isBlank() || trimmedConfirm.isBlank()) {
+            localErrorMessage = "Semua kolom wajib diisi"
             showErrorBanner = true
-        } else if (password != konfirmasiPassword) {
-            errorMessage = "Konfirmasi password tidak cocok"
+        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(trimmedEmail).matches()) {
+            localErrorMessage = "Format email tidak valid"
+            showErrorBanner = true
+        } else if (trimmedPass.length < 6) {
+            localErrorMessage = "Kata sandi minimal 6 karakter"
+            showErrorBanner = true
+        } else if (trimmedPass != trimmedConfirm) {
+            localErrorMessage = "Konfirmasi password tidak cocok"
             showErrorBanner = true
         } else {
             showErrorBanner = false
-            onRegisterSuccess(namaLengkap, email, password)
+            onRegisterSuccess(trimmedNama, trimmedEmail, trimmedPass)
         }
     }
 
@@ -548,6 +573,7 @@ fun RegisterScreen(
             // ==========================================
             Button(
                 onClick = { handleRegister() },
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
@@ -555,7 +581,9 @@ fun RegisterScreen(
                 contentPadding = PaddingValues(0.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Transparent,
-                    contentColor = Color.White
+                    contentColor = Color.White,
+                    disabledContainerColor = RevoraGreenPrimary.copy(alpha = 0.6f),
+                    disabledContentColor = Color.White
                 )
             ) {
                 Box(
@@ -564,12 +592,20 @@ fun RegisterScreen(
                         .background(brush = RevoraGreenGradient),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "DAFTAR",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.5.sp
-                    )
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.5.dp
+                        )
+                    } else {
+                        Text(
+                            text = "DAFTAR",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        )
+                    }
                 }
             }
 
@@ -604,7 +640,7 @@ fun RegisterScreen(
                             Spacer(modifier = Modifier.width(10.dp))
 
                             Text(
-                                text = errorMessage,
+                                text = displayErrorMessage,
                                 color = ArenovaErrorRedDark,
                                 fontSize = 13.5.sp,
                                 fontWeight = FontWeight.SemiBold,
