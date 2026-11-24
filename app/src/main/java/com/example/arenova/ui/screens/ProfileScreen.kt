@@ -29,7 +29,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -249,69 +248,10 @@ fun ProfileScreen(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(22.dp))
-
-            // ==========================================
-            // 3. KARTU STATISTIK (3 KOLOM)
-            // ==========================================
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(
-                        elevation = 2.dp,
-                        shape = RoundedCornerShape(18.dp),
-                        ambientColor = Color.Black.copy(alpha = 0.04f),
-                        spotColor = Color.Black.copy(alpha = 0.05f)
-                    ),
-                shape = RoundedCornerShape(18.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, Color(0xFFF1F5F9))
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 18.dp, horizontal = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    StatItem(
-                        number = "14",
-                        label = "Main Bareng",
-                        numberColor = RevoraGreenPrimary,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    VerticalDivider(
-                        modifier = Modifier.height(36.dp),
-                        thickness = 1.dp,
-                        color = Color(0xFFE2E8F0)
-                    )
-
-                    StatItem(
-                        number = "5",
-                        label = "Venue Favorit",
-                        numberColor = Color(0xFFF59E0B),
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    VerticalDivider(
-                        modifier = Modifier.height(36.dp),
-                        thickness = 1.dp,
-                        color = Color(0xFFE2E8F0)
-                    )
-
-                    StatItem(
-                        number = "98%",
-                        label = "Kehadiran",
-                        numberColor = ArenovaDarkText,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-
             Spacer(modifier = Modifier.height(28.dp))
 
             // ==========================================
-            // 4. JUDUL SECTION "AKUN & PREFERENSI"
+            // 3. JUDUL SECTION "AKUN & PREFERENSI"
             // ==========================================
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -329,7 +269,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             // ==========================================
-            // 5. DAFTAR MENU KARTU
+            // 4. DAFTAR MENU KARTU
             // ==========================================
             ProfileMenuCard(
                 iconRes = R.drawable.ic_badge_id,
@@ -366,7 +306,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(26.dp))
 
             // ==========================================
-            // 6. TOMBOL LOGOUT
+            // 5. TOMBOL LOGOUT
             // ==========================================
             Button(
                 onClick = onLogoutClick,
@@ -404,7 +344,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(18.dp))
 
             // ==========================================
-            // 7. FOOTER VERSI APLIKASI
+            // 6. FOOTER VERSI APLIKASI
             // ==========================================
             Text(
                 text = "Versi 2.4.0 • Arenova Sports Hub",
@@ -415,36 +355,6 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
         }
-    }
-}
-
-@Composable
-private fun StatItem(
-    number: String,
-    label: String,
-    numberColor: Color,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = number,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = numberColor
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Normal,
-            color = ArenovaSubtitleGray,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
     }
 }
 
