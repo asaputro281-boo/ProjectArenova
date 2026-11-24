@@ -92,8 +92,9 @@ fun DashboardScreen(
             ArenovaBottomNavigation(
                 selectedTab = selectedTab,
                 onTabSelected = { tab ->
-                    // Fungsi Riwayat dan Profil dikosongkan; tombol tetap ada di UI
-                    if (tab == DashboardTab.BERANDA) {
+                    if (tab == DashboardTab.PROFIL) {
+                        onProfileClick()
+                    } else if (tab == DashboardTab.BERANDA) {
                         selectedTab = DashboardTab.BERANDA
                     }
                 }
@@ -448,7 +449,7 @@ private fun SportCategoryCard(
 }
 
 @Composable
-private fun ArenovaBottomNavigation(
+fun ArenovaBottomNavigation(
     selectedTab: DashboardTab,
     onTabSelected: (DashboardTab) -> Unit
 ) {
@@ -490,7 +491,7 @@ private fun ArenovaBottomNavigation(
                 BottomNavItem(
                     label = "Riwayat",
                     iconRes = R.drawable.ic_receipt,
-                    isSelected = false,
+                    isSelected = selectedTab == DashboardTab.RIWAYAT,
                     onClick = { onTabSelected(DashboardTab.RIWAYAT) },
                     modifier = Modifier.weight(1f)
                 )
@@ -498,7 +499,7 @@ private fun ArenovaBottomNavigation(
                 BottomNavItem(
                     label = "Profil",
                     iconRes = R.drawable.ic_profile_tab,
-                    isSelected = false,
+                    isSelected = selectedTab == DashboardTab.PROFIL,
                     onClick = { onTabSelected(DashboardTab.PROFIL) },
                     modifier = Modifier.weight(1f)
                 )
@@ -508,7 +509,7 @@ private fun ArenovaBottomNavigation(
 }
 
 @Composable
-private fun BottomNavItem(
+fun BottomNavItem(
     label: String,
     iconRes: Int,
     isSelected: Boolean,

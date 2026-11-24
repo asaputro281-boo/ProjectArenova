@@ -21,9 +21,13 @@ import com.example.arenova.ui.screens.BadmintonListScreen
 import com.example.arenova.ui.screens.DashboardScreen
 import com.example.arenova.ui.screens.DashboardTab
 import com.example.arenova.ui.screens.ForgotPasswordScreen
+import com.example.arenova.ui.screens.FutsalListScreen
 import com.example.arenova.ui.screens.LoginScreen
+import com.example.arenova.ui.screens.MiniSoccerListScreen
 import com.example.arenova.ui.screens.OtpVerificationScreen
+import com.example.arenova.ui.screens.PadelListScreen
 import com.example.arenova.ui.screens.PasswordChangedSuccessScreen
+import com.example.arenova.ui.screens.ProfileScreen
 import com.example.arenova.ui.screens.RegisterScreen
 import com.example.arenova.ui.screens.RegisterSuccessScreen
 import com.example.arenova.ui.screens.ResetPasswordScreen
@@ -44,7 +48,11 @@ enum class ArenovaScreen {
     RESET_PASSWORD,
     PASSWORD_CHANGED_SUCCESS,
     DASHBOARD,
-    BADMINTON_LIST
+    BADMINTON_LIST,
+    FUTSAL_LIST,
+    MINI_SOCCER_LIST,
+    PADEL_LIST,
+    PROFILE
 }
 
 class MainActivity : ComponentActivity() {
@@ -54,7 +62,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             ArenovaTheme {
                 val context = LocalContext.current
-                // Mulai dari Splash Screen
                 var currentScreen by remember { mutableStateOf(ArenovaScreen.SPLASH) }
                 var currentUserName by remember { mutableStateOf("Angga Dwi Saputro") }
                 var registeredEmail by remember { mutableStateOf("") }
@@ -88,7 +95,6 @@ class MainActivity : ComponentActivity() {
                     label = "AppScreenTransition"
                 ) { screen ->
                     when (screen) {
-                        // 1. SPLASH SCREEN
                         ArenovaScreen.SPLASH -> {
                             ArenovaSplashScreen(
                                 onNavigateNext = {
@@ -97,7 +103,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // 2. LOGIN SCREEN
                         ArenovaScreen.LOGIN -> {
                             LoginScreen(
                                 isError = isLoginFailed,
@@ -120,7 +125,6 @@ class MainActivity : ComponentActivity() {
                                         return@LoginScreen
                                     }
 
-                                    // Fallback akun lokal / demo untuk pengetesan offline
                                     val isValidRegistered = registeredEmail.isNotBlank() &&
                                             trimmedEmail.equals(registeredEmail.trim(), ignoreCase = true) &&
                                             trimmedPass == registeredPassword
@@ -152,7 +156,6 @@ class MainActivity : ComponentActivity() {
                                         return@LoginScreen
                                     }
 
-                                    // Login melalui Firebase Authentication
                                     isLoginLoading = true
                                     isLoginFailed = false
 
@@ -231,7 +234,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // 3. REGISTER SCREEN (Pembuatan Akun Terhubung Firebase Auth & Firestore)
                         ArenovaScreen.REGISTER -> {
                             RegisterScreen(
                                 isError = isRegisterFailed,
@@ -261,7 +263,6 @@ class MainActivity : ComponentActivity() {
                                                     val firebaseUser = auth.currentUser
                                                     val uid = firebaseUser?.uid ?: ""
 
-                                                    // Update Display Name di Firebase Auth
                                                     try {
                                                         val profileUpdates = UserProfileChangeRequest.Builder()
                                                             .setDisplayName(trimmedNama)
@@ -269,7 +270,6 @@ class MainActivity : ComponentActivity() {
                                                         firebaseUser?.updateProfile(profileUpdates)
                                                     } catch (_: Exception) {}
 
-                                                    // Simpan Data Profil Pengguna ke Cloud Firestore
                                                     val newUser = UserModel(
                                                         uid = uid,
                                                         fullName = trimmedNama,
@@ -342,7 +342,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // 4. REGISTER SUCCESS SCREEN (Pembuatan Sukses)
                         ArenovaScreen.REGISTER_SUCCESS -> {
                             RegisterSuccessScreen(
                                 onLoginClick = {
@@ -363,7 +362,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // 5. FORGOT PASSWORD SCREEN (Lupa Sandi)
                         ArenovaScreen.FORGOT_PASSWORD -> {
                             ForgotPasswordScreen(
                                 onBackClick = {
@@ -407,7 +405,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // 6. OTP VERIFICATION SCREEN (Verifikasi Kode)
                         ArenovaScreen.OTP_VERIFICATION -> {
                             OtpVerificationScreen(
                                 email = if (resetEmailTarget.isNotBlank()) resetEmailTarget else "user@email.com",
@@ -442,7 +439,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // 7. RESET PASSWORD SCREEN (Buat Sandi Baru)
                         ArenovaScreen.RESET_PASSWORD -> {
                             ResetPasswordScreen(
                                 onBackClick = {
@@ -462,7 +458,6 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // 8. PASSWORD CHANGED SUCCESS SCREEN (Sandi Berhasil Diubah)
                         ArenovaScreen.PASSWORD_CHANGED_SUCCESS -> {
                             PasswordChangedSuccessScreen(
                                 onLoginClick = {
@@ -483,19 +478,30 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // 9. DASHBOARD SCREEN (Menu Utama Lapangan & Komunitas)
                         ArenovaScreen.DASHBOARD -> {
                             DashboardScreen(
                                 userName = currentUserName,
                                 onCategoryClick = { category ->
-                                    if (category.equals("Badminton", ignoreCase = true)) {
-                                        currentScreen = ArenovaScreen.BADMINTON_LIST
-                                    } else {
-                                        Toast.makeText(
-                                            context,
-                                            "Membuka daftar lapangan $category",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                    when {
+                                        category.equals("Badminton", ignoreCase = true) -> {
+                                            currentScreen = ArenovaScreen.BADMINTON_LIST
+                                        }
+                                        category.equals("Futsal", ignoreCase = true) -> {
+                                            currentScreen = ArenovaScreen.FUTSAL_LIST
+                                        }
+                                        category.equals("Mini Soccer", ignoreCase = true) -> {
+                                            currentScreen = ArenovaScreen.MINI_SOCCER_LIST
+                                        }
+                                        category.equals("Padel", ignoreCase = true) -> {
+                                            currentScreen = ArenovaScreen.PADEL_LIST
+                                        }
+                                        else -> {
+                                            Toast.makeText(
+                                                context,
+                                                "Membuka daftar lapangan $category",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
                                     }
                                 },
                                 onCommunityClick = {
@@ -506,12 +512,11 @@ class MainActivity : ComponentActivity() {
                                     ).show()
                                 },
                                 onProfileClick = {
-                                    logoutToLogin()
+                                    currentScreen = ArenovaScreen.PROFILE
                                 }
                             )
                         }
 
-                        // 10. BADMINTON COURT LIST SCREEN (Daftar Lapangan Badminton)
                         ArenovaScreen.BADMINTON_LIST -> {
                             BadmintonListScreen(
                                 onBackClick = {
@@ -525,7 +530,7 @@ class MainActivity : ComponentActivity() {
                                     ).show()
                                 },
                                 onProfileClick = {
-                                    logoutToLogin()
+                                    currentScreen = ArenovaScreen.PROFILE
                                 },
                                 onFilterClick = {
                                     Toast.makeText(
@@ -549,20 +554,214 @@ class MainActivity : ComponentActivity() {
                                     ).show()
                                 },
                                 onTabSelected = { tab ->
-                                    when (tab) {
-                                        DashboardTab.BERANDA -> {
-                                            currentScreen = ArenovaScreen.DASHBOARD
-                                        }
-                                        DashboardTab.RIWAYAT -> {
-                                            Toast.makeText(
-                                                context,
-                                                "Membuka riwayat pemesanan",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
-                                        DashboardTab.PROFIL -> {
-                                            logoutToLogin()
-                                        }
+                                    if (tab == DashboardTab.BERANDA) {
+                                        currentScreen = ArenovaScreen.DASHBOARD
+                                    } else if (tab == DashboardTab.PROFIL) {
+                                        currentScreen = ArenovaScreen.PROFILE
+                                    }
+                                }
+                            )
+                        }
+
+                        ArenovaScreen.FUTSAL_LIST -> {
+                            FutsalListScreen(
+                                onBackClick = {
+                                    currentScreen = ArenovaScreen.DASHBOARD
+                                },
+                                onNotificationClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Belum ada notifikasi baru",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onProfileClick = {
+                                    currentScreen = ArenovaScreen.PROFILE
+                                },
+                                onFilterClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Membuka opsi filter lapangan",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onSortClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Membuka urutan harga & rating",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onBookCourtClick = { court ->
+                                    Toast.makeText(
+                                        context,
+                                        "Pemesanan ${court.name} (${court.price}/jam) berhasil dipilih!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onTabSelected = { tab ->
+                                    if (tab == DashboardTab.BERANDA) {
+                                        currentScreen = ArenovaScreen.DASHBOARD
+                                    } else if (tab == DashboardTab.PROFIL) {
+                                        currentScreen = ArenovaScreen.PROFILE
+                                    }
+                                }
+                            )
+                        }
+
+                        ArenovaScreen.MINI_SOCCER_LIST -> {
+                            MiniSoccerListScreen(
+                                onBackClick = {
+                                    currentScreen = ArenovaScreen.DASHBOARD
+                                },
+                                onNotificationClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Belum ada notifikasi baru",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onProfileClick = {
+                                    currentScreen = ArenovaScreen.PROFILE
+                                },
+                                onFilterClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Membuka opsi filter lapangan",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onSortClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Membuka urutan harga & rating",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onBookCourtClick = { court ->
+                                    Toast.makeText(
+                                        context,
+                                        "Pemesanan ${court.name} (${court.price}/jam) berhasil dipilih!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onTabSelected = { tab ->
+                                    if (tab == DashboardTab.BERANDA) {
+                                        currentScreen = ArenovaScreen.DASHBOARD
+                                    } else if (tab == DashboardTab.PROFIL) {
+                                        currentScreen = ArenovaScreen.PROFILE
+                                    }
+                                }
+                            )
+                        }
+
+                        ArenovaScreen.PADEL_LIST -> {
+                            PadelListScreen(
+                                onBackClick = {
+                                    currentScreen = ArenovaScreen.DASHBOARD
+                                },
+                                onNotificationClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Belum ada notifikasi baru",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onProfileClick = {
+                                    currentScreen = ArenovaScreen.PROFILE
+                                },
+                                onFilterClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Membuka opsi filter lapangan",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onSortClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Membuka urutan harga & rating",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onBookCourtClick = { court ->
+                                    Toast.makeText(
+                                        context,
+                                        "Pemesanan ${court.name} (${court.price}/jam) berhasil dipilih!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onTabSelected = { tab ->
+                                    if (tab == DashboardTab.BERANDA) {
+                                        currentScreen = ArenovaScreen.DASHBOARD
+                                    } else if (tab == DashboardTab.PROFIL) {
+                                        currentScreen = ArenovaScreen.PROFILE
+                                    }
+                                }
+                            )
+                        }
+
+                        ArenovaScreen.PROFILE -> {
+                            val activeEmail = try {
+                                val fbEmail = FirebaseAuth.getInstance().currentUser?.email
+                                if (!fbEmail.isNullOrBlank()) fbEmail else registeredEmail.ifBlank { "user@email.com" }
+                            } catch (_: Exception) {
+                                registeredEmail.ifBlank { "user@email.com" }
+                            }
+
+                            ProfileScreen(
+                                userName = currentUserName,
+                                userEmail = activeEmail,
+                                onBackClick = {
+                                    currentScreen = ArenovaScreen.DASHBOARD
+                                },
+                                onNotificationClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Belum ada notifikasi baru",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onChangePhotoClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Fitur ubah foto profil akan segera hadir",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onEditProfileClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Membuka pengaturan Edit Profil",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onBookingHistoryClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Membuka Riwayat Booking Anda (1 Aktif)",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onSettingsClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Membuka menu Pengaturan",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onLogoutClick = {
+                                    logoutToLogin()
+                                },
+                                onTabSelected = { tab ->
+                                    if (tab == DashboardTab.BERANDA) {
+                                        currentScreen = ArenovaScreen.DASHBOARD
+                                    } else if (tab == DashboardTab.RIWAYAT) {
+                                        Toast.makeText(
+                                            context,
+                                            "Fitur Riwayat dalam pengembangan",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     }
                                 }
                             )

@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Ticket outline with left and right inner notches -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#F59E0B"
+        android:strokeWidth="1.9"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M3,9a3,3 0 0,0 0,6v3a2,2 0 0,0 2,2h14a2,2 0 0,0 2,-2v-3a3,3 0 0,0 0,-6V6a2,2 0 0,0 -2,-2H5a2,2 0 0,0 -2,2z" />
+    <!-- Ticket interior lines -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#F59E0B"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M8,9h8M8,12h8M8,15h5" />
+</vector>

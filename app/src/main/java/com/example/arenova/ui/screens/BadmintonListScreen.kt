@@ -2,9 +2,7 @@ package com.example.arenova.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,7 +19,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -86,7 +83,6 @@ fun BadmintonListScreen(
     onTabSelected: (DashboardTab) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    var selectedFilterChip by remember { mutableStateOf("Hari Ini") }
     var selectedTab by remember { mutableStateOf(DashboardTab.BERANDA) }
 
     val courts = remember {
@@ -108,7 +104,6 @@ fun BadmintonListScreen(
                 location = "Kebayoran Baru, Jakarta Selatan",
                 price = "Rp 55.000",
                 imageRes = R.drawable.img_badminton1
-
             ),
             BadmintonCourtItem(
                 id = "3",
@@ -239,7 +234,7 @@ fun BadmintonListScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // ==========================================
-            // 2. SUB-HEADER: TOMBOL KEMBALI, JUDUL & FILTER/SORT
+            // 2. SUB-HEADER: TOMBOL KEMBALI & JUDUL
             // ==========================================
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -268,130 +263,17 @@ fun BadmintonListScreen(
                     )
                     Spacer(modifier = Modifier.height(1.dp))
                     Text(
-                        text = "4 Lapangan tersedia di sekitarmu",
+                        text = "${courts.size} Lapangan tersedia di sekitarmu",
                         fontSize = 12.5.sp,
                         color = ArenovaSubtitleGray
                     )
                 }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(38.dp)
-                            .background(
-                                color = Color(0xFFF1F5F9),
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .clickable { onFilterClick() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_tune),
-                            contentDescription = "Filter",
-                            tint = ArenovaDarkText,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .size(38.dp)
-                            .background(
-                                color = Color(0xFFF1F5F9),
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .clickable { onSortClick() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_sort),
-                            contentDescription = "Urutkan",
-                            tint = ArenovaDarkText,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
             }
 
             Spacer(modifier = Modifier.height(18.dp))
 
             // ==========================================
-            // 3. FILTER CHIPS
-            // ==========================================
-            val filterChips = listOf(
-                FilterChipData("Hari Ini", R.drawable.ic_calendar),
-                FilterChipData("Indoor AC", R.drawable.ic_ac)
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                filterChips.forEach { chip ->
-                    val isSelected = selectedFilterChip == chip.label
-                    Surface(
-                        onClick = { selectedFilterChip = chip.label },
-                        shape = RoundedCornerShape(20.dp),
-                        color = Color.Transparent,
-                        modifier = Modifier
-                            .shadow(
-                                elevation = if (isSelected) 3.dp else 0.dp,
-                                shape = RoundedCornerShape(20.dp),
-                                ambientColor = RevoraGreenPrimary.copy(alpha = 0.25f),
-                                spotColor = RevoraGreenPrimary.copy(alpha = 0.35f)
-                            )
-                            .clip(RoundedCornerShape(20.dp))
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .then(
-                                    if (isSelected) {
-                                        Modifier.background(brush = RevoraGreenGradient)
-                                    } else {
-                                        Modifier
-                                            .background(Color.White)
-                                            .border(
-                                                width = 1.dp,
-                                                color = Color(0xFFE2E8F0),
-                                                shape = RoundedCornerShape(20.dp)
-                                            )
-                                    }
-                                )
-                                .padding(horizontal = 14.dp, vertical = 8.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = chip.iconRes),
-                                    contentDescription = chip.label,
-                                    tint = if (isSelected) Color.White else ArenovaSubtitleGray,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Text(
-                                    text = chip.label,
-                                    fontSize = 12.5.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = if (isSelected) Color.White else ArenovaDarkText
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            // ==========================================
-            // 4. DAFTAR KARTU LAPANGAN BADMINTON
+            // 3. DAFTAR KARTU LAPANGAN BADMINTON
             // ==========================================
             LazyColumn(
                 modifier = Modifier
@@ -410,11 +292,6 @@ fun BadmintonListScreen(
         }
     }
 }
-
-private data class FilterChipData(
-    val label: String,
-    val iconRes: Int
-)
 
 @Composable
 private fun BadmintonCourtCard(
