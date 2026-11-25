@@ -20,7 +20,6 @@ import com.example.arenova.ui.screens.ArenovaSplashScreen
 import com.example.arenova.ui.screens.BadmintonListScreen
 import com.example.arenova.ui.screens.CourtDetailItem
 import com.example.arenova.ui.screens.CourtDetailScreen
-import com.example.arenova.ui.screens.ScheduleSelectionScreen
 import com.example.arenova.ui.screens.DashboardScreen
 import com.example.arenova.ui.screens.DashboardTab
 import com.example.arenova.ui.screens.ForgotPasswordScreen
@@ -30,10 +29,12 @@ import com.example.arenova.ui.screens.MiniSoccerListScreen
 import com.example.arenova.ui.screens.OtpVerificationScreen
 import com.example.arenova.ui.screens.PadelListScreen
 import com.example.arenova.ui.screens.PasswordChangedSuccessScreen
+import com.example.arenova.ui.screens.PaymentMethodScreen
 import com.example.arenova.ui.screens.ProfileScreen
 import com.example.arenova.ui.screens.RegisterScreen
 import com.example.arenova.ui.screens.RegisterSuccessScreen
 import com.example.arenova.ui.screens.ResetPasswordScreen
+import com.example.arenova.ui.screens.ScheduleSelectionScreen
 import com.example.arenova.ui.theme.ArenovaTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -57,6 +58,7 @@ enum class ArenovaScreen {
     PADEL_LIST,
     COURT_DETAIL,
     SCHEDULE_SELECTION,
+    PAYMENT_METHOD,
     PROFILE
 }
 
@@ -70,6 +72,9 @@ class MainActivity : ComponentActivity() {
                 var currentScreen by remember { mutableStateOf(ArenovaScreen.SPLASH) }
                 var previousScreen by remember { mutableStateOf(ArenovaScreen.DASHBOARD) }
                 var selectedCourtDetail by remember { mutableStateOf(CourtDetailItem()) }
+                var bookingDate by remember { mutableStateOf("01 Jan 2026") }
+                var bookingTimeSlot by remember { mutableStateOf("15:00 - 16:00") }
+                var bookingTotalPrice by remember { mutableStateOf("Rp 100.000") }
                 var currentUserName by remember { mutableStateOf("Angga Dwi Saputro") }
                 var registeredEmail by remember { mutableStateOf("") }
                 var registeredPassword by remember { mutableStateOf("") }
@@ -778,12 +783,43 @@ class MainActivity : ComponentActivity() {
                                 onProfileClick = {
                                     currentScreen = ArenovaScreen.PROFILE
                                 },
-                                onProceedClick = { courtItem, date, timeSlot, duration, total ->
+                                onProceedClick = { courtItem, date, timeSlot, _, total ->
+                                    selectedCourtDetail = courtItem
+                                    bookingDate = date
+                                    bookingTimeSlot = timeSlot
+                                    bookingTotalPrice = total
+                                    previousScreen = ArenovaScreen.SCHEDULE_SELECTION
+                                    currentScreen = ArenovaScreen.PAYMENT_METHOD
+                                }
+                            )
+                        }
+
+                        ArenovaScreen.PAYMENT_METHOD -> {
+                            PaymentMethodScreen(
+                                court = selectedCourtDetail,
+                                bookingDate = bookingDate,
+                                bookingTime = bookingTimeSlot,
+                                totalPrice = bookingTotalPrice,
+                                onBackClick = {
+                                    currentScreen = ArenovaScreen.SCHEDULE_SELECTION
+                                },
+                                onHelpClick = {
                                     Toast.makeText(
                                         context,
-                                        "Lanjut ke pembayaran:\n${courtItem.name}\n$date | $timeSlot ($duration jam)\nTotal: $total",
+                                        "Pusat Bantuan Pembayaran Arenova",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onProfileClick = {
+                                    currentScreen = ArenovaScreen.PROFILE
+                                },
+                                onPaymentSuccess = { method ->
+                                    Toast.makeText(
+                                        context,
+                                        "Pembayaran via ${method.title} berhasil dikonfirmasi! Booking Anda telah aktif.",
                                         Toast.LENGTH_LONG
                                     ).show()
+                                    currentScreen = ArenovaScreen.DASHBOARD
                                 }
                             )
                         }
@@ -802,38 +838,17 @@ class MainActivity : ComponentActivity() {
                                 onBackClick = {
                                     currentScreen = ArenovaScreen.DASHBOARD
                                 },
-                                onNotificationClick = {
+                                onSettingsClick = {
                                     Toast.makeText(
                                         context,
-                                        "Belum ada notifikasi baru",
+                                        "Membuka menu Pengaturan",
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 },
                                 onChangePhotoClick = {
                                     Toast.makeText(
                                         context,
-                                        "Fitur ubah foto profil akan segera hadir",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                },
-                                onEditProfileClick = {
-                                    Toast.makeText(
-                                        context,
-                                        "Membuka pengaturan Edit Profil",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                },
-                                onBookingHistoryClick = {
-                                    Toast.makeText(
-                                        context,
-                                        "Membuka Riwayat Booking Anda (1 Aktif)",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                },
-                                onSettingsClick = {
-                                    Toast.makeText(
-                                        context,
-                                        "Membuka menu Pengaturan",
+                                        "Fitur ubah foto profil",
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 },

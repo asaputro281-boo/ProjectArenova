@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -141,8 +142,8 @@ fun CourtDetailScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
             // ==========================================
             // 1. HERO COURT IMAGE & FLOATING BADGES
@@ -268,7 +269,7 @@ fun CourtDetailScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(18.dp)
+                        .padding(20.dp)
                 ) {
                     Text(
                         text = court.name,
@@ -277,7 +278,7 @@ fun CourtDetailScreen(
                         color = ArenovaDarkText
                     )
 
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
@@ -294,43 +295,21 @@ fun CourtDetailScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.Bottom) {
-                            Text(
-                                text = court.price,
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFEA580C)
-                            )
-                            Text(
-                                text = " /jam",
-                                fontSize = 14.sp,
-                                color = ArenovaSubtitleGray,
-                                modifier = Modifier.padding(bottom = 2.dp)
-                            )
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .background(
-                                    color = Color(0xFFEEF2FF),
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .padding(horizontal = 12.dp, vertical = 5.dp)
-                        ) {
-                            Text(
-                                text = court.rateType,
-                                fontSize = 11.5.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF4F46E5)
-                            )
-                        }
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(
+                            text = court.price,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFEA580C)
+                        )
+                        Text(
+                            text = " /jam",
+                            fontSize = 14.sp,
+                            color = ArenovaSubtitleGray,
+                            modifier = Modifier.padding(bottom = 2.dp)
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -350,7 +329,7 @@ fun CourtDetailScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(18.dp)
+                        .padding(20.dp)
                 ) {
                     Text(
                         text = "Deskripsi Lapangan",
@@ -368,7 +347,7 @@ fun CourtDetailScreen(
                         color = Color(0xFF475569)
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(18.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -383,7 +362,7 @@ fun CourtDetailScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(12.dp),
+                                    .padding(14.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(
@@ -435,7 +414,7 @@ fun CourtDetailScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(12.dp),
+                                    .padding(14.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(
@@ -485,7 +464,7 @@ fun CourtDetailScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(18.dp)
+                        .padding(20.dp)
                 ) {
                     Text(
                         text = "Ketentuan Lapangan",
@@ -500,7 +479,7 @@ fun CourtDetailScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 5.dp),
+                                .padding(vertical = 6.dp),
                             verticalAlignment = Alignment.Top
                         ) {
                             Box(
@@ -535,7 +514,7 @@ fun CourtDetailScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
@@ -629,7 +608,9 @@ private fun CourtDetailBottomBar(
     onSelectScheduleClick: () -> Unit
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding(),
         color = Color.White,
         shadowElevation = 10.dp
     ) {
@@ -644,7 +625,7 @@ private fun CourtDetailBottomBar(
                         strokeWidth = 1.dp.toPx()
                     )
                 }
-                .padding(horizontal = 20.dp, vertical = 12.dp)
+                .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -657,7 +638,7 @@ private fun CourtDetailBottomBar(
                         fontSize = 11.5.sp,
                         color = ArenovaSubtitleGray
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(3.dp))
                     Text(
                         text = price,
                         fontSize = 19.sp,
@@ -672,7 +653,7 @@ private fun CourtDetailBottomBar(
                     onClick = onSelectScheduleClick,
                     modifier = Modifier
                         .weight(1f)
-                        .height(48.dp)
+                        .height(50.dp)
                         .shadow(
                             elevation = 3.dp,
                             shape = RoundedCornerShape(12.dp),

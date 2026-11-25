@@ -1,6 +1,7 @@
 package com.example.arenova.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,11 +15,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,6 +28,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -47,7 +50,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,20 +61,13 @@ import com.example.arenova.ui.theme.ArenovaTheme
 import java.text.NumberFormat
 import java.util.Locale
 
-private val RevoraGreenDark = Color(0xFF006837)
-private val RevoraGreenPrimary = Color(0xFF007A3D)
 private val RevoraGreenStart = Color(0xFF43A047)
 private val RevoraGreenEnd = Color(0xFF2E7D32)
+private val RevoraGreenPrimary = Color(0xFF388E3C)
+private val RevoraGreenSoftBg = Color(0xFFE8F5E9)
 
 private val RevoraGreenGradient = Brush.horizontalGradient(
     colors = listOf(RevoraGreenStart, RevoraGreenEnd)
-)
-
-data class DateSlotItem(
-    val dayName: String,
-    val dateLabel: String,
-    val fullDate: String,
-    val availableSlots: Int = 14
 )
 
 data class TimeSlotItem(
@@ -93,14 +88,7 @@ fun ScheduleSelectionScreen(
 ) {
     val context = LocalContext.current
 
-    val dateOptions = remember {
-        listOf(
-            DateSlotItem(dayName = "Kam", dateLabel = "01 Jan", fullDate = "01 Jan 2026", availableSlots = 14),
-            DateSlotItem(dayName = "Jum", dateLabel = "02 Jan", fullDate = "02 Jan 2026", availableSlots = 12),
-            DateSlotItem(dayName = "Sab", dateLabel = "03 Jan", fullDate = "03 Jan 2026", availableSlots = 8),
-            DateSlotItem(dayName = "Min", dateLabel = "04 Jan", fullDate = "04 Jan 2026", availableSlots = 10)
-        )
-    }
+    val defaultDate = "01 Jan 2026"
 
     val timeSlots = remember {
         listOf(
@@ -112,16 +100,15 @@ fun ScheduleSelectionScreen(
             TimeSlotItem("14–15", "Siang", 14, isAvailable = true),
             TimeSlotItem("15–16", "Sore", 15, isAvailable = true),
             TimeSlotItem("16–17", "Sore", 16, isAvailable = true),
-            TimeSlotItem("17–18", "Sore", 17, isAvailable = false) // Penuh
+            TimeSlotItem("17–18", "Sore", 17, isAvailable = true)
         )
     }
 
-    var selectedDateIndex by remember { mutableIntStateOf(0) }
+    var dateInputText by remember { mutableStateOf(defaultDate) }
     var selectedTimeSlot by remember { mutableStateOf("14–15") }
     var selectedStartHour by remember { mutableIntStateOf(14) }
     var selectedDurationHours by remember { mutableIntStateOf(1) }
 
-    // Parse base price
     val basePriceNumber = remember(court.price) {
         val digits = court.price.filter { it.isDigit() }
         digits.toIntOrNull() ?: 100000
@@ -133,7 +120,6 @@ fun ScheduleSelectionScreen(
         "Rp ${formatter.format(totalPriceNumber)}"
     }
 
-    val selectedDate = dateOptions[selectedDateIndex]
     val endHour = selectedStartHour + selectedDurationHours
     val timeRangeLabel = String.format(Locale.getDefault(), "%02d:00 - %02d:00 WIB", selectedStartHour, endHour)
 
@@ -154,10 +140,11 @@ fun ScheduleSelectionScreen(
             ScheduleBottomBar(
                 totalPrice = formattedTotalPrice,
                 onProceedClick = {
+                    val finalDate = dateInputText.trim().ifBlank { defaultDate }
                     onProceedClick(
                         court,
-                        selectedDate.fullDate,
-                        selectedTimeSlot,
+                        finalDate,
+                        timeRangeLabel,
                         selectedDurationHours,
                         formattedTotalPrice
                     )
@@ -192,7 +179,7 @@ fun ScheduleSelectionScreen(
                         modifier = Modifier
                             .size(46.dp)
                             .background(
-                                color = Color(0xFFEFF6FF),
+                                color = RevoraGreenSoftBg,
                                 shape = RoundedCornerShape(12.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -200,14 +187,15 @@ fun ScheduleSelectionScreen(
                         Icon(
                             painter = painterResource(
                                 id = if (court.sportType.contains("Badminton", ignoreCase = true) ||
-                                    court.sportType.contains("Padel", ignoreCase = true)) {
+                                    court.sportType.contains("Padel", ignoreCase = true)
+                                ) {
                                     R.drawable.ic_racket
                                 } else {
                                     R.drawable.ic_ball_soccer
                                 }
                             ),
                             contentDescription = "Sport Icon",
-                            tint = Color(0xFFB45309),
+                            tint = RevoraGreenPrimary,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -234,13 +222,13 @@ fun ScheduleSelectionScreen(
                             text = "Rp",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = RevoraGreenPrimary
+                            color = Color(0xFFEA580C)
                         )
                         Text(
                             text = court.price.replace("Rp", "").trim(),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = RevoraGreenPrimary
+                            color = Color(0xFFEA580C)
                         )
                         Text(
                             text = "/ jam",
@@ -252,7 +240,7 @@ fun ScheduleSelectionScreen(
             }
 
             // ==========================================
-            // 2. SECTION: PILIH TANGGAL
+            // 2. SECTION: PILIH TANGGAL (INPUT KETIK)
             // ==========================================
             Column(modifier = Modifier.fillMaxWidth()) {
                 Row(
@@ -275,7 +263,7 @@ fun ScheduleSelectionScreen(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .clickable {
-                                selectedDateIndex = 0
+                                dateInputText = defaultDate
                                 Toast.makeText(context, "Tanggal disetel ke Hari Ini", Toast.LENGTH_SHORT).show()
                             }
                             .padding(horizontal = 4.dp, vertical = 2.dp)
@@ -284,99 +272,44 @@ fun ScheduleSelectionScreen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Date Display Box
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp),
-                    color = Color.White,
-                    shadowElevation = 0.5.dp,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                OutlinedTextField(
+                    value = dateInputText,
+                    onValueChange = { dateInputText = it },
+                    singleLine = true,
+                    placeholder = {
+                        Text(
+                            text = "Contoh: 25 Nov 2026",
+                            fontSize = 13.5.sp,
+                            color = ArenovaSubtitleGray
+                        )
+                    },
+                    leadingIcon = {
                         Box(
                             modifier = Modifier
-                                .size(40.dp)
-                                .background(Color(0xFFE8F8F0), RoundedCornerShape(10.dp)),
+                                .padding(start = 4.dp)
+                                .size(36.dp)
+                                .background(RevoraGreenSoftBg, RoundedCornerShape(10.dp)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_calendar),
                                 contentDescription = "Kalender",
                                 tint = RevoraGreenPrimary,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(18.dp)
                             )
                         }
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = selectedDate.fullDate,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = ArenovaDarkText
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = "${selectedDate.dayName} • Tersedia ${selectedDate.availableSlots} slot",
-                                fontSize = 12.sp,
-                                color = ArenovaSubtitleGray
-                            )
-                        }
-
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_calendar_edit),
-                            contentDescription = "Pilih Tanggal Lain",
-                            tint = Color(0xFF64748B),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Date Chips Row
-                LazyRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    items(dateOptions.indices.toList()) { index ->
-                        val item = dateOptions[index]
-                        val isSelected = selectedDateIndex == index
-
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(20.dp))
-                                .background(
-                                    if (isSelected) RevoraGreenDark else Color.White
-                                )
-                                .then(
-                                    if (!isSelected) {
-                                        Modifier.border(
-                                            1.dp,
-                                            Color(0xFFE2E8F0),
-                                            RoundedCornerShape(20.dp)
-                                        )
-                                    } else Modifier
-                                )
-                                .clickable { selectedDateIndex = index }
-                                .padding(horizontal = 16.dp, vertical = 9.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "${item.dayName}, ${item.dateLabel}",
-                                fontSize = 12.5.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) Color.White else ArenovaDarkText
-                            )
-                        }
-                    }
-                }
+                    },
+                    shape = RoundedCornerShape(14.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedBorderColor = RevoraGreenPrimary,
+                        unfocusedBorderColor = Color(0xFFE2E8F0),
+                        focusedTextColor = ArenovaDarkText,
+                        unfocusedTextColor = ArenovaDarkText
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
             // ==========================================
@@ -440,7 +373,6 @@ fun ScheduleSelectionScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Time Slot Grid (3 columns)
                 val rows = timeSlots.chunked(3)
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     rows.forEach { rowItems ->
@@ -450,29 +382,44 @@ fun ScheduleSelectionScreen(
                         ) {
                             rowItems.forEach { slot ->
                                 val isSelected = selectedTimeSlot == slot.time && slot.isAvailable
+                                val bgBrush = if (isSelected) RevoraGreenGradient else null
+                                val bgColor = when {
+                                    isSelected -> Color.Transparent
+                                    !slot.isAvailable -> Color(0xFFF1F5F9)
+                                    else -> Color.White
+                                }
 
                                 Surface(
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(64.dp)
-                                        .clip(RoundedCornerShape(14.dp))
-                                        .clickable(enabled = slot.isAvailable) {
-                                            selectedTimeSlot = slot.time
-                                            selectedStartHour = slot.startHour
-                                        },
+                                        .shadow(
+                                            elevation = if (isSelected || !slot.isAvailable) 0.dp else 1.dp,
+                                            shape = RoundedCornerShape(14.dp),
+                                            clip = false
+                                        ),
                                     shape = RoundedCornerShape(14.dp),
-                                    color = when {
-                                        isSelected -> RevoraGreenDark
-                                        !slot.isAvailable -> Color(0xFFF1F5F9)
-                                        else -> Color.White
-                                    },
+                                    color = bgColor,
                                     border = if (!isSelected && slot.isAvailable) {
-                                        androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
-                                    } else null,
-                                    shadowElevation = if (isSelected || !slot.isAvailable) 0.dp else 0.5.dp
+                                        BorderStroke(1.dp, Color(0xFFE2E8F0))
+                                    } else {
+                                        null
+                                    }
                                 ) {
                                     Column(
-                                        modifier = Modifier.fillMaxSize(),
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .then(
+                                                if (bgBrush != null) {
+                                                    Modifier.background(bgBrush)
+                                                } else {
+                                                    Modifier
+                                                }
+                                            )
+                                            .clickable(enabled = slot.isAvailable) {
+                                                selectedTimeSlot = slot.time
+                                                selectedStartHour = slot.startHour
+                                            },
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         verticalArrangement = Arrangement.Center
                                     ) {
@@ -490,11 +437,11 @@ fun ScheduleSelectionScreen(
                                         Spacer(modifier = Modifier.height(2.dp))
 
                                         Text(
-                                            text = if (isSelected) "Dipilih" else if (!slot.isAvailable) "Penuh" else slot.period,
+                                            text = if (isSelected) "Dipilih" else if (!slot.isAvailable) "sore" else slot.period,
                                             fontSize = 11.5.sp,
                                             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                                             color = when {
-                                                isSelected -> Color(0xFF86EFAC)
+                                                isSelected -> Color.White.copy(alpha = 0.95f)
                                                 !slot.isAvailable -> Color(0xFF94A3B8)
                                                 else -> ArenovaSubtitleGray
                                             }
@@ -532,13 +479,12 @@ fun ScheduleSelectionScreen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Duration Display Box
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(14.dp),
                     color = Color.White,
                     shadowElevation = 0.5.dp,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
+                    border = BorderStroke(1.dp, Color(0xFFE2E8F0))
                 ) {
                     Row(
                         modifier = Modifier
@@ -549,7 +495,7 @@ fun ScheduleSelectionScreen(
                         Box(
                             modifier = Modifier
                                 .size(40.dp)
-                                .background(Color(0xFFE8F8F0), RoundedCornerShape(10.dp)),
+                                .background(RevoraGreenSoftBg, RoundedCornerShape(10.dp)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -588,7 +534,6 @@ fun ScheduleSelectionScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Duration Buttons Row (1 Jam, 2 Jam, 3 Jam)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -601,17 +546,18 @@ fun ScheduleSelectionScreen(
                                 .weight(1f)
                                 .height(42.dp)
                                 .clip(RoundedCornerShape(20.dp))
-                                .background(
-                                    if (isSelected) RevoraGreenDark else Color.White
-                                )
                                 .then(
-                                    if (!isSelected) {
-                                        Modifier.border(
-                                            1.dp,
-                                            Color(0xFFE2E8F0),
-                                            RoundedCornerShape(20.dp)
-                                        )
-                                    } else Modifier
+                                    if (isSelected) {
+                                        Modifier.background(brush = RevoraGreenGradient)
+                                    } else {
+                                        Modifier
+                                            .background(Color.White)
+                                            .border(
+                                                1.dp,
+                                                Color(0xFFE2E8F0),
+                                                RoundedCornerShape(20.dp)
+                                            )
+                                    }
                                 )
                                 .clickable { selectedDurationHours = hours },
                             contentAlignment = Alignment.Center
@@ -645,7 +591,8 @@ private fun ScheduleTopBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 8.dp),
+                .statusBarsPadding()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -720,7 +667,9 @@ private fun ScheduleBottomBar(
     onProceedClick: () -> Unit
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding(),
         color = Color.White,
         shadowElevation = 10.dp
     ) {
@@ -753,7 +702,7 @@ private fun ScheduleBottomBar(
                         text = totalPrice,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = RevoraGreenDark
+                        color = Color(0xFFEA580C)
                     )
                 }
 
@@ -767,32 +716,40 @@ private fun ScheduleBottomBar(
                         .shadow(
                             elevation = 3.dp,
                             shape = RoundedCornerShape(14.dp),
-                            ambientColor = RevoraGreenDark.copy(alpha = 0.35f),
-                            spotColor = RevoraGreenDark.copy(alpha = 0.45f)
+                            ambientColor = RevoraGreenPrimary.copy(alpha = 0.35f),
+                            spotColor = RevoraGreenPrimary.copy(alpha = 0.45f)
                         ),
                     shape = RoundedCornerShape(14.dp),
+                    contentPadding = PaddingValues(0.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = RevoraGreenDark,
+                        containerColor = Color.Transparent,
                         contentColor = Color.White
                     )
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(brush = RevoraGreenGradient),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "LANJUT",
-                            fontSize = 14.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_arrow_forward),
-                            contentDescription = "Lanjut Pembayaran",
-                            tint = Color.White,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "LANJUT",
+                                fontSize = 14.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_arrow_forward),
+                                contentDescription = "Lanjut Pembayaran",
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }

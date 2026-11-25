@@ -202,6 +202,10 @@ fun ProfileScreen(
                         .clip(CircleShape)
                         .border(3.dp, Color.White, CircleShape)
                         .shadow(elevation = 3.dp, shape = CircleShape)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { onEditProfileClick() }
                 )
 
                 Box(
