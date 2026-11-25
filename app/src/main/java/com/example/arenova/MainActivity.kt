@@ -18,6 +18,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.arenova.data.model.UserModel
 import com.example.arenova.ui.screens.ArenovaSplashScreen
 import com.example.arenova.ui.screens.BadmintonListScreen
+import com.example.arenova.ui.screens.CourtDetailItem
+import com.example.arenova.ui.screens.CourtDetailScreen
+import com.example.arenova.ui.screens.ScheduleSelectionScreen
 import com.example.arenova.ui.screens.DashboardScreen
 import com.example.arenova.ui.screens.DashboardTab
 import com.example.arenova.ui.screens.ForgotPasswordScreen
@@ -52,6 +55,8 @@ enum class ArenovaScreen {
     FUTSAL_LIST,
     MINI_SOCCER_LIST,
     PADEL_LIST,
+    COURT_DETAIL,
+    SCHEDULE_SELECTION,
     PROFILE
 }
 
@@ -63,6 +68,8 @@ class MainActivity : ComponentActivity() {
             ArenovaTheme {
                 val context = LocalContext.current
                 var currentScreen by remember { mutableStateOf(ArenovaScreen.SPLASH) }
+                var previousScreen by remember { mutableStateOf(ArenovaScreen.DASHBOARD) }
+                var selectedCourtDetail by remember { mutableStateOf(CourtDetailItem()) }
                 var currentUserName by remember { mutableStateOf("Angga Dwi Saputro") }
                 var registeredEmail by remember { mutableStateOf("") }
                 var registeredPassword by remember { mutableStateOf("") }
@@ -547,11 +554,21 @@ class MainActivity : ComponentActivity() {
                                     ).show()
                                 },
                                 onBookCourtClick = { court ->
-                                    Toast.makeText(
-                                        context,
-                                        "Pemesanan ${court.name} (${court.price}/jam) berhasil dipilih!",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    selectedCourtDetail = CourtDetailItem(
+                                        id = court.id,
+                                        name = court.name,
+                                        sportType = "Badminton",
+                                        courtTag = "INDOOR COURT ${court.id}",
+                                        location = court.location,
+                                        price = court.price,
+                                        rating = court.starRating,
+                                        reviewCount = "128 Ulasan",
+                                        imageRes = court.imageRes,
+                                        description = "Lapangan bulutangkis berstandar PBSI dengan material vinyl interlock berkualitas tinggi yang meredam benturan sendi secara optimal. Dilengkapi dengan tata lampu LED anti-glare 800 lux, sirkulasi udara sejuk, ruang ganti privat, serta kantin dengan koneksi WiFi berkecepatan tinggi.",
+                                        courtSize = "13.4 x 6.1 Meter"
+                                    )
+                                    previousScreen = ArenovaScreen.BADMINTON_LIST
+                                    currentScreen = ArenovaScreen.COURT_DETAIL
                                 },
                                 onTabSelected = { tab ->
                                     if (tab == DashboardTab.BERANDA) {
@@ -593,11 +610,21 @@ class MainActivity : ComponentActivity() {
                                     ).show()
                                 },
                                 onBookCourtClick = { court ->
-                                    Toast.makeText(
-                                        context,
-                                        "Pemesanan ${court.name} (${court.price}/jam) berhasil dipilih!",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    selectedCourtDetail = CourtDetailItem(
+                                        id = court.id,
+                                        name = court.name,
+                                        sportType = "Futsal",
+                                        courtTag = "INDOOR COURT A",
+                                        location = court.location,
+                                        price = court.price,
+                                        rating = court.starRating,
+                                        reviewCount = "128 Ulasan",
+                                        imageRes = court.imageRes,
+                                        description = "Lapangan berstandar turnamen nasional dengan material vinyl interlock berkualitas tinggi yang meredam benturan lutut secara optimal. Dilengkapi dengan tata lampu LED anti-glare 800 lux, sirkulasi udara sejuk, ruang ganti privat, serta kantin dengan koneksi WiFi berkecepatan tinggi.",
+                                        courtSize = "25 x 15 Meter"
+                                    )
+                                    previousScreen = ArenovaScreen.FUTSAL_LIST
+                                    currentScreen = ArenovaScreen.COURT_DETAIL
                                 },
                                 onTabSelected = { tab ->
                                     if (tab == DashboardTab.BERANDA) {
@@ -639,11 +666,21 @@ class MainActivity : ComponentActivity() {
                                     ).show()
                                 },
                                 onBookCourtClick = { court ->
-                                    Toast.makeText(
-                                        context,
-                                        "Pemesanan ${court.name} (${court.price}/jam) berhasil dipilih!",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    selectedCourtDetail = CourtDetailItem(
+                                        id = court.id,
+                                        name = court.name,
+                                        sportType = "Mini Soccer",
+                                        courtTag = "OUTDOOR TURF A",
+                                        location = court.location,
+                                        price = court.price,
+                                        rating = court.starRating,
+                                        reviewCount = "128 Ulasan",
+                                        imageRes = court.imageRes,
+                                        description = "Lapangan mini soccer berstandar internasional dengan rumput sintetis bersertifikasi yang empuk dan aman untuk pergerakan pemain. Dilengkapi lampu sorot stadion terang, area duduk tribun, dan ruang ganti higienis.",
+                                        courtSize = "50 x 30 Meter"
+                                    )
+                                    previousScreen = ArenovaScreen.MINI_SOCCER_LIST
+                                    currentScreen = ArenovaScreen.COURT_DETAIL
                                 },
                                 onTabSelected = { tab ->
                                     if (tab == DashboardTab.BERANDA) {
@@ -685,11 +722,21 @@ class MainActivity : ComponentActivity() {
                                     ).show()
                                 },
                                 onBookCourtClick = { court ->
-                                    Toast.makeText(
-                                        context,
-                                        "Pemesanan ${court.name} (${court.price}/jam) berhasil dipilih!",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    selectedCourtDetail = CourtDetailItem(
+                                        id = court.id,
+                                        name = court.name,
+                                        sportType = "Padel",
+                                        courtTag = "PANORAMIC GLASS",
+                                        location = court.location,
+                                        price = court.price,
+                                        rating = court.starRating,
+                                        reviewCount = "128 Ulasan",
+                                        imageRes = court.imageRes,
+                                        description = "Lapangan padel tipe panoramic court dengan kaca tempered ultra-clear berstandar resmi WPT. Karpet monofilamen berdensitas tinggi memberikan pantulan bola stabil dan cengkeraman optimal.",
+                                        courtSize = "20 x 10 Meter"
+                                    )
+                                    previousScreen = ArenovaScreen.PADEL_LIST
+                                    currentScreen = ArenovaScreen.COURT_DETAIL
                                 },
                                 onTabSelected = { tab ->
                                     if (tab == DashboardTab.BERANDA) {
@@ -697,6 +744,46 @@ class MainActivity : ComponentActivity() {
                                     } else if (tab == DashboardTab.PROFIL) {
                                         currentScreen = ArenovaScreen.PROFILE
                                     }
+                                }
+                            )
+                        }
+
+                        ArenovaScreen.COURT_DETAIL -> {
+                            CourtDetailScreen(
+                                court = selectedCourtDetail,
+                                onBackClick = {
+                                    currentScreen = previousScreen
+                                },
+                                onShareClick = {
+                                    // Toast handled inside screen
+                                },
+                                onProfileClick = {
+                                    currentScreen = ArenovaScreen.PROFILE
+                                },
+                                onSelectScheduleClick = { _ ->
+                                    currentScreen = ArenovaScreen.SCHEDULE_SELECTION
+                                }
+                            )
+                        }
+
+                        ArenovaScreen.SCHEDULE_SELECTION -> {
+                            ScheduleSelectionScreen(
+                                court = selectedCourtDetail,
+                                onBackClick = {
+                                    currentScreen = ArenovaScreen.COURT_DETAIL
+                                },
+                                onShareClick = {
+                                    // Toast handled inside screen
+                                },
+                                onProfileClick = {
+                                    currentScreen = ArenovaScreen.PROFILE
+                                },
+                                onProceedClick = { courtItem, date, timeSlot, duration, total ->
+                                    Toast.makeText(
+                                        context,
+                                        "Lanjut ke pembayaran:\n${courtItem.name}\n$date | $timeSlot ($duration jam)\nTotal: $total",
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
                             )
                         }
