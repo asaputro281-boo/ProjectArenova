@@ -22,6 +22,7 @@ import com.example.arenova.ui.screens.CourtDetailItem
 import com.example.arenova.ui.screens.CourtDetailScreen
 import com.example.arenova.ui.screens.DashboardScreen
 import com.example.arenova.ui.screens.DashboardTab
+import com.example.arenova.ui.screens.EditProfileScreen
 import com.example.arenova.ui.screens.ForgotPasswordScreen
 import com.example.arenova.ui.screens.FutsalListScreen
 import com.example.arenova.ui.screens.LoginScreen
@@ -59,7 +60,8 @@ enum class ArenovaScreen {
     COURT_DETAIL,
     SCHEDULE_SELECTION,
     PAYMENT_METHOD,
-    PROFILE
+    PROFILE,
+    EDIT_PROFILE
 }
 
 class MainActivity : ComponentActivity() {
@@ -838,6 +840,57 @@ class MainActivity : ComponentActivity() {
                                 onBackClick = {
                                     currentScreen = ArenovaScreen.DASHBOARD
                                 },
+                                onEditProfileClick = {
+                                    currentScreen = ArenovaScreen.EDIT_PROFILE
+                                },
+                                onSettingsClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Membuka menu Pengaturan",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                onChangePhotoClick = {
+                                    currentScreen = ArenovaScreen.EDIT_PROFILE
+                                },
+                                onLogoutClick = {
+                                    logoutToLogin()
+                                },
+                                onTabSelected = { tab ->
+                                    if (tab == DashboardTab.BERANDA) {
+                                        currentScreen = ArenovaScreen.DASHBOARD
+                                    } else if (tab == DashboardTab.RIWAYAT) {
+                                        Toast.makeText(
+                                            context,
+                                            "Fitur Riwayat dalam pengembangan",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            )
+                        }
+
+                        ArenovaScreen.EDIT_PROFILE -> {
+                            val activeEmail = try {
+                                val fbEmail = FirebaseAuth.getInstance().currentUser?.email
+                                if (!fbEmail.isNullOrBlank()) fbEmail else registeredEmail.ifBlank { "user@email.com" }
+                            } catch (_: Exception) {
+                                registeredEmail.ifBlank { "user@email.com" }
+                            }
+
+                            EditProfileScreen(
+                                userName = currentUserName,
+                                userEmail = activeEmail,
+                                onBackClick = {
+                                    currentScreen = ArenovaScreen.PROFILE
+                                },
+                                onNotificationClick = {
+                                    Toast.makeText(
+                                        context,
+                                        "Tidak ada notifikasi baru",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
                                 onSettingsClick = {
                                     Toast.makeText(
                                         context,
@@ -852,12 +905,54 @@ class MainActivity : ComponentActivity() {
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 },
+                                onSaveClick = { newName, newEmail, newPhone ->
+                                    val trimmedName = newName.trim()
+                                    val trimmedEmail = newEmail.trim()
+                                    val trimmedPhone = newPhone.trim()
+
+                                    if (trimmedName.isNotBlank()) {
+                                        currentUserName = trimmedName
+                                    }
+                                    if (trimmedEmail.isNotBlank()) {
+                                        registeredEmail = trimmedEmail
+                                    }
+
+                                    try {
+                                        val user = FirebaseAuth.getInstance().currentUser
+                                        if (user != null) {
+                                            if (trimmedName.isNotBlank()) {
+                                                val profileUpdates = UserProfileChangeRequest.Builder()
+                                                    .setDisplayName(trimmedName)
+                                                    .build()
+                                                user.updateProfile(profileUpdates)
+                                            }
+                                            val updates = mutableMapOf<String, Any>()
+                                            if (trimmedName.isNotBlank()) updates["fullName"] = trimmedName
+                                            if (trimmedEmail.isNotBlank()) updates["email"] = trimmedEmail
+                                            if (trimmedPhone.isNotBlank()) updates["phone"] = trimmedPhone
+                                            if (updates.isNotEmpty()) {
+                                                FirebaseFirestore.getInstance()
+                                                    .collection("users")
+                                                    .document(user.uid)
+                                                    .update(updates)
+                                            }
+                                        }
+                                    } catch (_: Exception) {}
+
+                                    Toast.makeText(
+                                        context,
+                                        "Profil berhasil diperbarui",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
                                 onLogoutClick = {
                                     logoutToLogin()
                                 },
                                 onTabSelected = { tab ->
                                     if (tab == DashboardTab.BERANDA) {
                                         currentScreen = ArenovaScreen.DASHBOARD
+                                    } else if (tab == DashboardTab.PROFIL) {
+                                        currentScreen = ArenovaScreen.PROFILE
                                     } else if (tab == DashboardTab.RIWAYAT) {
                                         Toast.makeText(
                                             context,
