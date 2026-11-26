@@ -37,6 +37,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -81,22 +82,30 @@ fun EditProfileScreen(
     modifier: Modifier = Modifier,
     userName: String = "Nama Pengguna",
     userEmail: String = "user@email.com",
-    initialPhone: String = "81234567890",
-    initialShowSuccess: Boolean = true,
+    initialShowSuccess: Boolean = false,
     onBackClick: () -> Unit = {},
     onNotificationClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     onChangePhotoClick: () -> Unit = {},
-    onSaveClick: (name: String, email: String, phone: String) -> Unit = { _, _, _ -> },
+    onSaveClick: (name: String, email: String) -> Unit = { _, _ -> },
     onLogoutClick: () -> Unit = {},
     onTabSelected: (DashboardTab) -> Unit = {}
 ) {
     var nameState by remember { mutableStateOf(userName) }
     var emailState by remember { mutableStateOf(userEmail) }
-    var phoneState by remember { mutableStateOf(initialPhone) }
     var showSuccessBanner by remember { mutableStateOf(initialShowSuccess) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    val isNameError = errorMessage == "Nama tidak boleh kosong" && nameState.isBlank()
+    val isEmailError = errorMessage == "Email tidak boleh kosong" && emailState.isBlank()
 
     val scrollState = rememberScrollState()
+
+    LaunchedEffect(showSuccessBanner, errorMessage) {
+        if (showSuccessBanner || errorMessage != null) {
+            scrollState.animateScrollTo(0)
+        }
+    }
 
     BackHandler {
         onBackClick()
@@ -219,10 +228,74 @@ fun EditProfileScreen(
             Spacer(modifier = Modifier.height(14.dp))
 
             // ==========================================
-            // 2. BANNER NOTIFIKASI SUKSES
+            // 2. BANNER NOTIFIKASI ERROR VALIDASI
             // ==========================================
             AnimatedVisibility(
-                visible = showSuccessBanner,
+                visible = errorMessage != null,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    color = ArenovaErrorLightBg,
+                    border = BorderStroke(1.dp, ArenovaErrorRed.copy(alpha = 0.25f))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .background(ArenovaErrorRed, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "!",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color.White
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Text(
+                                text = errorMessage.orEmpty(),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = ArenovaErrorRed
+                            )
+                        }
+
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_close),
+                            contentDescription = "Tutup Peringatan",
+                            tint = ArenovaErrorRed,
+                            modifier = Modifier
+                                .size(18.dp)
+                                .clip(CircleShape)
+                                .clickable { errorMessage = null }
+                        )
+                    }
+                }
+            }
+
+            // ==========================================
+            // 3. BANNER NOTIFIKASI SUKSES
+            // ==========================================
+            AnimatedVisibility(
+                visible = showSuccessBanner && errorMessage == null,
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
@@ -278,7 +351,7 @@ fun EditProfileScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             // ==========================================
-            // 3. FOTO PROFIL DENGAN BADGE KAMERA
+            // 4. FOTO PROFIL DENGAN BADGE KAMERA
             // ==========================================
             Box(
                 contentAlignment = Alignment.BottomEnd,
@@ -336,7 +409,7 @@ fun EditProfileScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // ==========================================
-            // 4. KARTU FORM EDIT PROFIL
+            // 5. KARTU FORM EDIT PROFIL
             // ==========================================
             Surface(
                 modifier = Modifier.fillMaxWidth(),
@@ -350,7 +423,7 @@ fun EditProfileScreen(
                         .fillMaxWidth()
                         .padding(18.dp)
                 ) {
-                    // --- 4.1 Nama Lengkap ---
+                    // --- 5.1 Nama Lengkap ---
                     Text(
                         text = "Nama Lengkap",
                         fontSize = 13.sp,
@@ -362,12 +435,18 @@ fun EditProfileScreen(
 
                     BasicTextField(
                         value = nameState,
-                        onValueChange = { nameState = it },
+                        onValueChange = {
+                            nameState = it
+                            if (isNameError && it.isNotBlank()) errorMessage = null
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp)
                             .background(ArenovaInputBg, RoundedCornerShape(12.dp))
-                            .border(BorderStroke(1.dp, ArenovaBorderGray), RoundedCornerShape(12.dp))
+                            .border(
+                                BorderStroke(1.dp, if (isNameError) ArenovaErrorRed else ArenovaBorderGray),
+                                RoundedCornerShape(12.dp)
+                            )
                             .padding(horizontal = 16.dp),
                         textStyle = TextStyle(
                             fontSize = 14.5.sp,
@@ -399,7 +478,7 @@ fun EditProfileScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // --- 4.2 Email (Bisa Diedit) ---
+                    // --- 5.2 Email ---
                     Text(
                         text = "Email",
                         fontSize = 13.sp,
@@ -411,12 +490,18 @@ fun EditProfileScreen(
 
                     BasicTextField(
                         value = emailState,
-                        onValueChange = { emailState = it },
+                        onValueChange = {
+                            emailState = it
+                            if (isEmailError && it.isNotBlank()) errorMessage = null
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp)
                             .background(ArenovaInputBg, RoundedCornerShape(12.dp))
-                            .border(BorderStroke(1.dp, ArenovaBorderGray), RoundedCornerShape(12.dp))
+                            .border(
+                                BorderStroke(1.dp, if (isEmailError) ArenovaErrorRed else ArenovaBorderGray),
+                                RoundedCornerShape(12.dp)
+                            )
                             .padding(horizontal = 16.dp),
                         textStyle = TextStyle(
                             fontSize = 14.5.sp,
@@ -427,7 +512,7 @@ fun EditProfileScreen(
                         cursorBrush = SolidColor(RevoraGreenPrimary),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Email,
-                            imeAction = ImeAction.Next
+                            imeAction = ImeAction.Done
                         ),
                         decorationBox = { innerTextField ->
                             Box(
@@ -445,92 +530,34 @@ fun EditProfileScreen(
                             }
                         }
                     )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // --- 4.3 Nomor Handphone ---
-                    Text(
-                        text = "Nomor Handphone",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = ArenovaSubtitleGray
-                    )
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .width(64.dp)
-                                .height(52.dp)
-                                .background(ArenovaInputBg, RoundedCornerShape(12.dp))
-                                .border(BorderStroke(1.dp, ArenovaBorderGray), RoundedCornerShape(12.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "+62",
-                                fontSize = 14.5.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = ArenovaDarkText
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(10.dp))
-
-                        BasicTextField(
-                            value = phoneState,
-                            onValueChange = { input ->
-                                phoneState = input.filter { it.isDigit() }
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(52.dp)
-                                .background(ArenovaInputBg, RoundedCornerShape(12.dp))
-                                .border(BorderStroke(1.dp, ArenovaBorderGray), RoundedCornerShape(12.dp))
-                                .padding(horizontal = 16.dp),
-                            textStyle = TextStyle(
-                                fontSize = 14.5.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = ArenovaDarkText
-                            ),
-                            singleLine = true,
-                            cursorBrush = SolidColor(RevoraGreenPrimary),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Phone,
-                                imeAction = ImeAction.Done
-                            ),
-                            decorationBox = { innerTextField ->
-                                Box(
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.CenterStart
-                                ) {
-                                    if (phoneState.isEmpty()) {
-                                        Text(
-                                            text = "81234567890",
-                                            fontSize = 14.5.sp,
-                                            color = ArenovaSubtitleGray
-                                        )
-                                    }
-                                    innerTextField()
-                                }
-                            }
-                        )
-                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // ==========================================
-            // 5. TOMBOL SIMPAN PERUBAHAN
+            // 6. TOMBOL SIMPAN PERUBAHAN
             // ==========================================
             Button(
                 onClick = {
-                    showSuccessBanner = true
-                    onSaveClick(nameState, emailState, phoneState)
+                    val trimmedName = nameState.trim()
+                    val trimmedEmail = emailState.trim()
+
+                    when {
+                        trimmedName.isBlank() -> {
+                            errorMessage = "Nama tidak boleh kosong"
+                            showSuccessBanner = false
+                        }
+                        trimmedEmail.isBlank() -> {
+                            errorMessage = "Email tidak boleh kosong"
+                            showSuccessBanner = false
+                        }
+                        else -> {
+                            errorMessage = null
+                            showSuccessBanner = true
+                            onSaveClick(trimmedName, trimmedEmail)
+                        }
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -579,7 +606,7 @@ fun EditProfileScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // ==========================================
-            // 6. TOMBOL LOGOUT
+            // 7. TOMBOL LOGOUT
             // ==========================================
             Button(
                 onClick = onLogoutClick,
@@ -617,7 +644,7 @@ fun EditProfileScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // ==========================================
-            // 7. FOOTER VERSI APLIKASI
+            // 8. FOOTER VERSI APLIKASI
             // ==========================================
             Text(
                 text = "Versi 2.4.0 • Arenova Sports Hub",
@@ -638,8 +665,7 @@ fun EditProfileScreenPreview() {
         EditProfileScreen(
             userName = "Nama Pengguna",
             userEmail = "user@email.com",
-            initialPhone = "81234567890",
-            initialShowSuccess = true
+            initialShowSuccess = false
         )
     }
 }

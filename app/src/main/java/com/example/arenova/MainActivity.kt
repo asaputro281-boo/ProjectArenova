@@ -905,10 +905,10 @@ class MainActivity : ComponentActivity() {
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 },
-                                onSaveClick = { newName, newEmail, newPhone ->
+                                onSaveClick = { newName, newEmail,->
                                     val trimmedName = newName.trim()
                                     val trimmedEmail = newEmail.trim()
-                                    val trimmedPhone = newPhone.trim()
+
 
                                     if (trimmedName.isNotBlank()) {
                                         currentUserName = trimmedName
@@ -929,7 +929,6 @@ class MainActivity : ComponentActivity() {
                                             val updates = mutableMapOf<String, Any>()
                                             if (trimmedName.isNotBlank()) updates["fullName"] = trimmedName
                                             if (trimmedEmail.isNotBlank()) updates["email"] = trimmedEmail
-                                            if (trimmedPhone.isNotBlank()) updates["phone"] = trimmedPhone
                                             if (updates.isNotEmpty()) {
                                                 FirebaseFirestore.getInstance()
                                                     .collection("users")
