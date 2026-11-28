@@ -36,6 +36,7 @@ import com.example.arenova.ui.screens.RegisterScreen
 import com.example.arenova.ui.screens.RegisterSuccessScreen
 import com.example.arenova.ui.screens.ResetPasswordScreen
 import com.example.arenova.ui.screens.ScheduleSelectionScreen
+import com.example.arenova.ui.screens.SettingsScreen
 import com.example.arenova.ui.theme.ArenovaTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -61,7 +62,8 @@ enum class ArenovaScreen {
     SCHEDULE_SELECTION,
     PAYMENT_METHOD,
     PROFILE,
-    EDIT_PROFILE
+    EDIT_PROFILE,
+    SETTINGS
 }
 
 class MainActivity : ComponentActivity() {
@@ -844,11 +846,7 @@ class MainActivity : ComponentActivity() {
                                     currentScreen = ArenovaScreen.EDIT_PROFILE
                                 },
                                 onSettingsClick = {
-                                    Toast.makeText(
-                                        context,
-                                        "Membuka menu Pengaturan",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    currentScreen = ArenovaScreen.SETTINGS
                                 },
                                 onChangePhotoClick = {
                                     currentScreen = ArenovaScreen.EDIT_PROFILE
@@ -892,11 +890,7 @@ class MainActivity : ComponentActivity() {
                                     ).show()
                                 },
                                 onSettingsClick = {
-                                    Toast.makeText(
-                                        context,
-                                        "Membuka menu Pengaturan",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    currentScreen = ArenovaScreen.SETTINGS
                                 },
                                 onChangePhotoClick = {
                                     Toast.makeText(
@@ -959,6 +953,31 @@ class MainActivity : ComponentActivity() {
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }
+                                }
+                            )
+                        }
+
+                        ArenovaScreen.SETTINGS -> {
+                            val activeEmail = try {
+                                val fbEmail = FirebaseAuth.getInstance().currentUser?.email
+                                if (!fbEmail.isNullOrBlank()) fbEmail else registeredEmail.ifBlank { "user@email.com" }
+                            } catch (_: Exception) {
+                                registeredEmail.ifBlank { "user@email.com" }
+                            }
+
+                            SettingsScreen(
+                                onBackClick = {
+                                    currentScreen = ArenovaScreen.PROFILE
+                                },
+                                onProfileClick = {
+                                    currentScreen = ArenovaScreen.PROFILE
+                                },
+                                onChangePasswordClick = {
+                                    resetEmailTarget = activeEmail
+                                    currentScreen = ArenovaScreen.FORGOT_PASSWORD
+                                },
+                                onLogoutClick = {
+                                    logoutToLogin()
                                 }
                             )
                         }

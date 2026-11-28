@@ -299,7 +299,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             ProfileMenuCard(
-                iconRes = R.drawable.ic_chevron_right,
+                iconRes = R.drawable.ic_settings,
                 iconTint = Color(0xFF475569),
                 iconBgColor = Color(0xFFE2E8F0),
                 title = "Pengaturan",

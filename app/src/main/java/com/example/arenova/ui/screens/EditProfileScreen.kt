@@ -136,7 +136,7 @@ fun EditProfileScreen(
             Spacer(modifier = Modifier.height(10.dp))
 
             // ==========================================
-            // 1. TOP APP BAR: LOGO PROFIL & AKSI KANAN
+            // 1. TOP APP BAR: BACK + EDIT PROFILE & AKSI KANAN
             // ==========================================
             Row(
                 modifier = Modifier
@@ -147,32 +147,25 @@ fun EditProfileScreen(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) { onBackClick() }
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { onBackClick() }
+                        .padding(vertical = 4.dp, horizontal = 2.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(38.dp)
-                            .background(
-                                brush = RevoraGreenGradient,
-                                shape = RoundedCornerShape(11.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_profile_tab),
-                            contentDescription = "Logo Profil",
-                            tint = Color.White,
-                            modifier = Modifier.size(22.dp)
-                        )
-                    }
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_arrow_back),
+                        contentDescription = "Kembali",
+                        tint = ArenovaDarkText,
+                        modifier = Modifier.size(22.dp)
+                    )
 
-                    Spacer(modifier = Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
 
                     Text(
-                        text = "Profil",
+                        text = "Edit Profile",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = ArenovaDarkText
