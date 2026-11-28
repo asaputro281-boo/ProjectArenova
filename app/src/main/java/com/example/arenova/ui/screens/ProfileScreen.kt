@@ -64,7 +64,7 @@ private val RevoraGreenGradient = Brush.horizontalGradient(
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
-    userName: String = "Nama Pengguna",
+    userName: String = "Angga Dwi Saputro",
     userEmail: String = "user@email.com",
     onBackClick: () -> Unit = {},
     onNotificationClick: () -> Unit = {},
@@ -164,7 +164,7 @@ fun ProfileScreen(
                         modifier = Modifier
                             .size(36.dp)
                             .background(
-                                color = Color(0xFF006941),
+                                brush = RevoraGreenGradient,
                                 shape = CircleShape
                             )
                             .clip(CircleShape)
@@ -235,7 +235,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(14.dp))
 
             Text(
-                text = userName.ifBlank { "Nama Pengguna" },
+                text = userName.ifBlank { "Angga Dwi Saputro" },
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = ArenovaDarkText,
@@ -303,7 +303,7 @@ fun ProfileScreen(
                 iconTint = Color(0xFF475569),
                 iconBgColor = Color(0xFFE2E8F0),
                 title = "Pengaturan",
-                subtitle = "Notifikasi, bahasa, & keamanan",
+                subtitle = "Notifikasi, bahasa, keamanan, & bantuan",
                 onClick = onSettingsClick
             )
 
@@ -358,6 +358,88 @@ fun ProfileScreen(
             )
 
             Spacer(modifier = Modifier.height(20.dp))
+        }
+    }
+}
+
+@Composable
+fun SettingsScreen(
+    modifier: Modifier = Modifier,
+    onBackClick: () -> Unit = {},
+    onHelpClick: () -> Unit = {}
+) {
+    val scrollState = rememberScrollState()
+
+    Scaffold(
+        modifier = modifier
+            .fillMaxSize()
+            .background(ArenovaScreenBg)
+            .statusBarsPadding(),
+        containerColor = ArenovaScreenBg
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(scrollState)
+                .padding(horizontal = 20.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { onBackClick() },
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_arrow_back),
+                        contentDescription = "Kembali",
+                        tint = ArenovaDarkText,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                Text(
+                    text = "Pengaturan",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = ArenovaDarkText,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = "DUKUNGAN",
+                fontSize = 12.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = ArenovaSubtitleGray,
+                letterSpacing = 0.8.sp
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            ProfileMenuCard(
+                iconRes = R.drawable.ic_question_circle,
+                iconTint = Color(0xFF00A86B),
+                iconBgColor = Color(0xFFE2EFE7),
+                title = "Bantuan",
+                subtitle = "Pusat tanya jawab & hubungi kami",
+                onClick = onHelpClick
+            )
         }
     }
 }
@@ -467,7 +549,7 @@ private fun ProfileMenuCard(
 fun ProfileScreenPreview() {
     ArenovaTheme {
         ProfileScreen(
-            userName = "Nama Pengguna",
+            userName = "Angga Dwi Saputro",
             userEmail = "user@email.com"
         )
     }

@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -46,15 +47,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -80,24 +88,28 @@ private val RevoraGreenGradient = Brush.horizontalGradient(
 @Composable
 fun EditProfileScreen(
     modifier: Modifier = Modifier,
-    userName: String = "Nama Pengguna",
+    userName: String = "Angga Dwi Saputro",
     userEmail: String = "user@email.com",
     initialShowSuccess: Boolean = false,
     onBackClick: () -> Unit = {},
     onNotificationClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
     onChangePhotoClick: () -> Unit = {},
-    onSaveClick: (name: String, email: String) -> Unit = { _, _ -> },
+    onSaveClick: (name: String, email: String, newPassword: String) -> Unit = { _, _, _ -> },
     onLogoutClick: () -> Unit = {},
     onTabSelected: (DashboardTab) -> Unit = {}
 ) {
     var nameState by remember { mutableStateOf(userName) }
     var emailState by remember { mutableStateOf(userEmail) }
+    var passwordState by remember { mutableStateOf("") }
+    var isPasswordVisible by remember { mutableStateOf(false) }
     var showSuccessBanner by remember { mutableStateOf(initialShowSuccess) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val isNameError = errorMessage == "Nama tidak boleh kosong" && nameState.isBlank()
     val isEmailError = errorMessage == "Email tidak boleh kosong" && emailState.isBlank()
+    val isPasswordError = errorMessage == "Sandi minimal 6 karakter" &&
+            passwordState.isNotBlank() && passwordState.trim().length < 6
 
     val scrollState = rememberScrollState()
 
@@ -392,7 +404,7 @@ fun EditProfileScreen(
             Spacer(modifier = Modifier.height(14.dp))
 
             Text(
-                text = if (nameState.isNotBlank()) nameState else "Nama Pengguna",
+                text = if (nameState.isNotBlank()) nameState else "Angga Dwi Saputro",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = ArenovaDarkText,
@@ -459,7 +471,7 @@ fun EditProfileScreen(
                             ) {
                                 if (nameState.isEmpty()) {
                                     Text(
-                                        text = "Nama Pengguna",
+                                        text = "Angga Dwi Saputro",
                                         fontSize = 14.5.sp,
                                         color = ArenovaSubtitleGray
                                     )
@@ -505,7 +517,7 @@ fun EditProfileScreen(
                         cursorBrush = SolidColor(RevoraGreenPrimary),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Email,
-                            imeAction = ImeAction.Done
+                            imeAction = ImeAction.Next
                         ),
                         decorationBox = { innerTextField ->
                             Box(
@@ -523,6 +535,93 @@ fun EditProfileScreen(
                             }
                         }
                     )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // --- 5.3 Edit Sandi ---
+                    Text(
+                        text = "Edit Sandi",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = ArenovaSubtitleGray
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    BasicTextField(
+                        value = passwordState,
+                        onValueChange = {
+                            passwordState = it
+                            if (isPasswordError && (it.isBlank() || it.trim().length >= 6)) {
+                                errorMessage = null
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                            .background(ArenovaInputBg, RoundedCornerShape(12.dp))
+                            .border(
+                                BorderStroke(1.dp, if (isPasswordError) ArenovaErrorRed else ArenovaBorderGray),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .padding(start = 16.dp, end = 12.dp),
+                        textStyle = TextStyle(
+                            fontSize = 14.5.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = ArenovaDarkText
+                        ),
+                        singleLine = true,
+                        visualTransformation = if (isPasswordVisible) {
+                            VisualTransformation.None
+                        } else {
+                            PasswordVisualTransformation()
+                        },
+                        cursorBrush = SolidColor(RevoraGreenPrimary),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done
+                        ),
+                        decorationBox = { innerTextField ->
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Box(
+                                    modifier = Modifier.weight(1f),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    if (passwordState.isEmpty()) {
+                                        Text(
+                                            text = "Masukkan sandi baru (opsional)",
+                                            fontSize = 14.5.sp,
+                                            color = ArenovaSubtitleGray
+                                        )
+                                    }
+                                    innerTextField()
+                                }
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null
+                                        ) { isPasswordVisible = !isPasswordVisible },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    PasswordEyeIcon(
+                                        isVisible = isPasswordVisible,
+                                        tint = ArenovaSubtitleGray,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+                    )
                 }
             }
 
@@ -535,6 +634,7 @@ fun EditProfileScreen(
                 onClick = {
                     val trimmedName = nameState.trim()
                     val trimmedEmail = emailState.trim()
+                    val trimmedPassword = passwordState.trim()
 
                     when {
                         trimmedName.isBlank() -> {
@@ -545,10 +645,15 @@ fun EditProfileScreen(
                             errorMessage = "Email tidak boleh kosong"
                             showSuccessBanner = false
                         }
+                        trimmedPassword.isNotBlank() && trimmedPassword.length < 6 -> {
+                            errorMessage = "Sandi minimal 6 karakter"
+                            showSuccessBanner = false
+                        }
                         else -> {
                             errorMessage = null
                             showSuccessBanner = true
-                            onSaveClick(trimmedName, trimmedEmail)
+                            passwordState = ""
+                            onSaveClick(trimmedName, trimmedEmail, trimmedPassword)
                         }
                     }
                 },
@@ -651,12 +756,67 @@ fun EditProfileScreen(
     }
 }
 
+@Composable
+private fun PasswordEyeIcon(
+    isVisible: Boolean,
+    tint: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val strokeWidth = 1.7.dp.toPx()
+
+        val eyePath = Path().apply {
+            moveTo(w * 0.08f, h * 0.5f)
+            cubicTo(
+                w * 0.28f, h * 0.18f,
+                w * 0.72f, h * 0.18f,
+                w * 0.92f, h * 0.5f
+            )
+            cubicTo(
+                w * 0.72f, h * 0.82f,
+                w * 0.28f, h * 0.82f,
+                w * 0.08f, h * 0.5f
+            )
+            close()
+        }
+
+        drawPath(
+            path = eyePath,
+            color = tint,
+            style = Stroke(
+                width = strokeWidth,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
+        )
+
+        drawCircle(
+            color = tint,
+            radius = w * 0.14f,
+            center = Offset(w * 0.5f, h * 0.5f),
+            style = Stroke(width = strokeWidth)
+        )
+
+        if (!isVisible) {
+            drawLine(
+                color = tint,
+                start = Offset(w * 0.16f, h * 0.84f),
+                end = Offset(w * 0.84f, h * 0.16f),
+                strokeWidth = strokeWidth,
+                cap = StrokeCap.Round
+            )
+        }
+    }
+}
+
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun EditProfileScreenPreview() {
     ArenovaTheme {
         EditProfileScreen(
-            userName = "Nama Pengguna",
+            userName = "Angga Dwi Saputro",
             userEmail = "user@email.com",
             initialShowSuccess = false
         )

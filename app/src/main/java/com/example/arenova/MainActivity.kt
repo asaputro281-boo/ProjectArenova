@@ -25,18 +25,21 @@ import com.example.arenova.ui.screens.DashboardTab
 import com.example.arenova.ui.screens.EditProfileScreen
 import com.example.arenova.ui.screens.ForgotPasswordScreen
 import com.example.arenova.ui.screens.FutsalListScreen
+import com.example.arenova.ui.screens.HelpScreen
 import com.example.arenova.ui.screens.LoginScreen
 import com.example.arenova.ui.screens.MiniSoccerListScreen
 import com.example.arenova.ui.screens.OtpVerificationScreen
 import com.example.arenova.ui.screens.PadelListScreen
 import com.example.arenova.ui.screens.PasswordChangedSuccessScreen
 import com.example.arenova.ui.screens.PaymentMethodScreen
+import com.example.arenova.ui.screens.PrivacyPolicyScreen
 import com.example.arenova.ui.screens.ProfileScreen
 import com.example.arenova.ui.screens.RegisterScreen
 import com.example.arenova.ui.screens.RegisterSuccessScreen
 import com.example.arenova.ui.screens.ResetPasswordScreen
 import com.example.arenova.ui.screens.ScheduleSelectionScreen
 import com.example.arenova.ui.screens.SettingsScreen
+import com.example.arenova.ui.screens.TermsAndConditionsScreen
 import com.example.arenova.ui.theme.ArenovaTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -63,7 +66,10 @@ enum class ArenovaScreen {
     PAYMENT_METHOD,
     PROFILE,
     EDIT_PROFILE,
-    SETTINGS
+    SETTINGS,
+    HELP,
+    TERMS_AND_CONDITIONS,
+    PRIVACY_POLICY
 }
 
 class MainActivity : ComponentActivity() {
@@ -349,11 +355,8 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 onSupportClick = {
-                                    Toast.makeText(
-                                        context,
-                                        "Pusat Bantuan Arenova: Hubungi cs@arenova.id",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    previousScreen = ArenovaScreen.REGISTER
+                                    currentScreen = ArenovaScreen.HELP
                                 }
                             )
                         }
@@ -369,11 +372,8 @@ class MainActivity : ComponentActivity() {
                                     currentScreen = ArenovaScreen.DASHBOARD
                                 },
                                 onHelpClick = {
-                                    Toast.makeText(
-                                        context,
-                                        "Pusat Bantuan Arenova",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    previousScreen = ArenovaScreen.REGISTER_SUCCESS
+                                    currentScreen = ArenovaScreen.HELP
                                 }
                             )
                         }
@@ -485,11 +485,8 @@ class MainActivity : ComponentActivity() {
                                     currentScreen = ArenovaScreen.LOGIN
                                 },
                                 onHelpClick = {
-                                    Toast.makeText(
-                                        context,
-                                        "Pusat Bantuan Arenova: Hubungi cs@arenova.id",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    previousScreen = ArenovaScreen.PASSWORD_CHANGED_SUCCESS
+                                    currentScreen = ArenovaScreen.HELP
                                 }
                             )
                         }
@@ -808,11 +805,8 @@ class MainActivity : ComponentActivity() {
                                     currentScreen = ArenovaScreen.SCHEDULE_SELECTION
                                 },
                                 onHelpClick = {
-                                    Toast.makeText(
-                                        context,
-                                        "Pusat Bantuan Pembayaran Arenova",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    previousScreen = ArenovaScreen.PAYMENT_METHOD
+                                    currentScreen = ArenovaScreen.HELP
                                 },
                                 onProfileClick = {
                                     currentScreen = ArenovaScreen.PROFILE
@@ -899,16 +893,19 @@ class MainActivity : ComponentActivity() {
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 },
-                                onSaveClick = { newName, newEmail,->
+                                onSaveClick = { newName, newEmail, newPassword ->
                                     val trimmedName = newName.trim()
                                     val trimmedEmail = newEmail.trim()
-
+                                    val trimmedPassword = newPassword.trim()
 
                                     if (trimmedName.isNotBlank()) {
                                         currentUserName = trimmedName
                                     }
                                     if (trimmedEmail.isNotBlank()) {
                                         registeredEmail = trimmedEmail
+                                    }
+                                    if (trimmedPassword.isNotBlank()) {
+                                        registeredPassword = trimmedPassword
                                     }
 
                                     try {
@@ -919,6 +916,9 @@ class MainActivity : ComponentActivity() {
                                                     .setDisplayName(trimmedName)
                                                     .build()
                                                 user.updateProfile(profileUpdates)
+                                            }
+                                            if (trimmedPassword.isNotBlank()) {
+                                                user.updatePassword(trimmedPassword)
                                             }
                                             val updates = mutableMapOf<String, Any>()
                                             if (trimmedName.isNotBlank()) updates["fullName"] = trimmedName
@@ -934,7 +934,11 @@ class MainActivity : ComponentActivity() {
 
                                     Toast.makeText(
                                         context,
-                                        "Profil berhasil diperbarui",
+                                        if (trimmedPassword.isNotBlank()) {
+                                            "Profil dan sandi berhasil diperbarui"
+                                        } else {
+                                            "Profil berhasil diperbarui"
+                                        },
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 },
@@ -958,13 +962,6 @@ class MainActivity : ComponentActivity() {
                         }
 
                         ArenovaScreen.SETTINGS -> {
-                            val activeEmail = try {
-                                val fbEmail = FirebaseAuth.getInstance().currentUser?.email
-                                if (!fbEmail.isNullOrBlank()) fbEmail else registeredEmail.ifBlank { "user@email.com" }
-                            } catch (_: Exception) {
-                                registeredEmail.ifBlank { "user@email.com" }
-                            }
-
                             SettingsScreen(
                                 onBackClick = {
                                     currentScreen = ArenovaScreen.PROFILE
@@ -972,12 +969,53 @@ class MainActivity : ComponentActivity() {
                                 onProfileClick = {
                                     currentScreen = ArenovaScreen.PROFILE
                                 },
-                                onChangePasswordClick = {
-                                    resetEmailTarget = activeEmail
-                                    currentScreen = ArenovaScreen.FORGOT_PASSWORD
+                                onHelpClick = {
+                                    previousScreen = ArenovaScreen.SETTINGS
+                                    currentScreen = ArenovaScreen.HELP
+                                },
+                                onTermsClick = {
+                                    previousScreen = ArenovaScreen.SETTINGS
+                                    currentScreen = ArenovaScreen.TERMS_AND_CONDITIONS
+                                },
+                                onPrivacyClick = {
+                                    previousScreen = ArenovaScreen.SETTINGS
+                                    currentScreen = ArenovaScreen.PRIVACY_POLICY
                                 },
                                 onLogoutClick = {
                                     logoutToLogin()
+                                }
+                            )
+                        }
+
+                        ArenovaScreen.HELP -> {
+                            HelpScreen(
+                                onBackClick = {
+                                    currentScreen = previousScreen
+                                },
+                                onProfileClick = {
+                                    currentScreen = ArenovaScreen.PROFILE
+                                }
+                            )
+                        }
+
+                        ArenovaScreen.TERMS_AND_CONDITIONS -> {
+                            TermsAndConditionsScreen(
+                                onBackClick = {
+                                    currentScreen = previousScreen
+                                },
+                                onProfileClick = {
+                                    currentScreen = ArenovaScreen.PROFILE
+                                }
+                            )
+                        }
+
+                        ArenovaScreen.PRIVACY_POLICY -> {
+                            PrivacyPolicyScreen(
+                                onBackClick = {
+                                    currentScreen = previousScreen
+                                },
+                                onProfileClick = {
+                                    currentScreen = ArenovaScreen.PROFILE
                                 }
                             )
                         }

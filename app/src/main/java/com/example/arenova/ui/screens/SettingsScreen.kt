@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -52,18 +53,38 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.arenova.R
 import com.example.arenova.ui.theme.ArenovaDarkText
+import com.example.arenova.ui.theme.ArenovaErrorLightBg
 import com.example.arenova.ui.theme.ArenovaErrorRed
 import com.example.arenova.ui.theme.ArenovaPrimaryGreen
 import com.example.arenova.ui.theme.ArenovaScreenBg
 import com.example.arenova.ui.theme.ArenovaSubtitleGray
 import com.example.arenova.ui.theme.ArenovaTheme
 
+// Palet warna hijau tema Revora / Arenova konsisten dengan tampilan lainnya (Dashboard, Profile, dll.)
+private val RevoraGreenStart = Color(0xFF43A047)
+private val RevoraGreenEnd = Color(0xFF2E7D32)
+private val RevoraGreenPrimary = Color(0xFF388E3C)
+private val RevoraGreenSoftBg = Color(0xFFE8F5E9)
+private val RevoraGreenBorder = Color(0xFFC8E6C9)
+
+private val RevoraGreenGradient = Brush.horizontalGradient(
+    colors = listOf(RevoraGreenStart, RevoraGreenEnd)
+)
+
+private val SettingsBannerBg = RevoraGreenSoftBg
+private val SettingsBannerBorder = RevoraGreenBorder
+private val SettingsIconBg = RevoraGreenSoftBg
+private val SettingsIconTint = RevoraGreenPrimary
+private val SettingsCardBorder = Color(0xFFF1F5F9)
+
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
-    onChangePasswordClick: () -> Unit = {},
+    onHelpClick: () -> Unit = {},
+    onTermsClick: () -> Unit = {},
+    onPrivacyClick: () -> Unit = {},
     onLogoutClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -135,7 +156,7 @@ fun SettingsScreen(
                     modifier = Modifier
                         .size(36.dp)
                         .background(
-                            color = Color(0xFF006941),
+                            brush = RevoraGreenGradient,
                             shape = CircleShape
                         )
                         .clip(CircleShape)
@@ -168,7 +189,8 @@ fun SettingsScreen(
                         indication = null
                     ) { showVerifiedDialog = true },
                 shape = RoundedCornerShape(16.dp),
-                color = Color(0xFFEEF2FF)
+                color = SettingsBannerBg,
+                border = BorderStroke(1.dp, SettingsBannerBorder)
             ) {
                 Row(
                     modifier = Modifier
@@ -180,7 +202,7 @@ fun SettingsScreen(
                         modifier = Modifier
                             .size(42.dp)
                             .background(
-                                color = Color(0xFFDCFCE7),
+                                color = Color.White,
                                 shape = CircleShape
                             ),
                         contentAlignment = Alignment.Center
@@ -188,7 +210,7 @@ fun SettingsScreen(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_shield_check),
                             contentDescription = "Terverifikasi",
-                            tint = Color(0xFF00B368),
+                            tint = RevoraGreenPrimary,
                             modifier = Modifier.size(22.dp)
                         )
                     }
@@ -219,9 +241,13 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        color = Color(0xFF00B368)
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                brush = RevoraGreenGradient,
+                                shape = RoundedCornerShape(20.dp)
+                            )
+                            .clip(RoundedCornerShape(20.dp))
                     ) {
                         Text(
                             text = "Aktif",
@@ -237,76 +263,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // ==========================================
-            // 3. SECTION: AKUN
-            // ==========================================
-            SectionHeader(title = "AKUN")
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(
-                        elevation = 1.dp,
-                        shape = RoundedCornerShape(16.dp),
-                        ambientColor = Color.Black.copy(alpha = 0.02f),
-                        spotColor = Color.Black.copy(alpha = 0.04f)
-                    )
-                    .clip(RoundedCornerShape(16.dp))
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) { onChangePasswordClick() },
-                shape = RoundedCornerShape(16.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, Color(0xFFF1F5F9))
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(42.dp)
-                            .background(
-                                color = Color(0xFFEFF6FF),
-                                shape = CircleShape
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_lock_repeat),
-                            contentDescription = "Ubah Sandi",
-                            tint = Color(0xFF0D9488),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(14.dp))
-
-                    Text(
-                        text = "Ubah Sandi",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = ArenovaDarkText,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_chevron_right),
-                        contentDescription = "Buka Ubah Sandi",
-                        tint = ArenovaSubtitleGray,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // ==========================================
-            // 4. SECTION: NOTIFIKASI
+            // 3. SECTION: NOTIFIKASI
             // ==========================================
             SectionHeader(title = "NOTIFIKASI")
 
@@ -337,15 +294,15 @@ fun SettingsScreen(
                             modifier = Modifier
                                 .size(42.dp)
                                 .background(
-                                    color = Color(0xFFEFF6FF),
-                                    shape = CircleShape
+                                    color = SettingsIconBg,
+                                    shape = RoundedCornerShape(12.dp)
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_alarm_clock),
                                 contentDescription = "Pengingat Booking",
-                                tint = Color(0xFF0284C7),
+                                tint = SettingsIconTint,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -386,7 +343,7 @@ fun SettingsScreen(
                             },
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
-                                checkedTrackColor = Color(0xFF00B368),
+                                checkedTrackColor = RevoraGreenPrimary,
                                 checkedBorderColor = Color.Transparent,
                                 uncheckedThumbColor = Color.White,
                                 uncheckedTrackColor = Color(0xFFE2E8F0),
@@ -415,15 +372,15 @@ fun SettingsScreen(
                             modifier = Modifier
                                 .size(42.dp)
                                 .background(
-                                    color = Color(0xFFEFF6FF),
-                                    shape = CircleShape
+                                    color = SettingsIconBg,
+                                    shape = RoundedCornerShape(12.dp)
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_megaphone),
                                 contentDescription = "Info dan Promo",
-                                tint = Color(0xFFD97706),
+                                tint = SettingsIconTint,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -464,7 +421,7 @@ fun SettingsScreen(
                             },
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
-                                checkedTrackColor = Color(0xFF00B368),
+                                checkedTrackColor = RevoraGreenPrimary,
                                 checkedBorderColor = Color.Transparent,
                                 uncheckedThumbColor = Color.White,
                                 uncheckedTrackColor = Color(0xFFCBD5E1),
@@ -478,7 +435,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // ==========================================
-            // 5. SECTION: LAINNYA
+            // 4. SECTION: LAINNYA
             // ==========================================
             SectionHeader(title = "LAINNYA")
 
@@ -502,7 +459,7 @@ fun SettingsScreen(
                     SettingsNavRow(
                         iconRes = R.drawable.ic_help_square,
                         title = "Bantuan",
-                        onClick = { showHelpDialog = true }
+                        onClick = onHelpClick
                     )
 
                     // Divider horizontal
@@ -518,7 +475,7 @@ fun SettingsScreen(
                     SettingsNavRow(
                         iconRes = R.drawable.ic_document_terms,
                         title = "Syarat dan Ketentuan",
-                        onClick = { showTermsDialog = true }
+                        onClick = onTermsClick
                     )
 
                     // Divider horizontal
@@ -534,7 +491,7 @@ fun SettingsScreen(
                     SettingsNavRow(
                         iconRes = R.drawable.ic_shield_privacy,
                         title = "Kebijakan Privasi",
-                        onClick = { showPrivacyDialog = true }
+                        onClick = onPrivacyClick
                     )
                 }
             }
@@ -542,19 +499,19 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(28.dp))
 
             // ==========================================
-            // 6. TOMBOL KELUAR AKUN
+            // 5. TOMBOL KELUAR AKUN
             // ==========================================
-            Surface(
+            Button(
+                onClick = { showLogoutDialog = true },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) { showLogoutDialog = true },
+                    .height(52.dp),
                 shape = RoundedCornerShape(16.dp),
-                color = Color(0xFFF1F5FD)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = ArenovaErrorLightBg,
+                    contentColor = ArenovaErrorRed
+                ),
+                contentPadding = PaddingValues(0.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxSize(),
@@ -580,7 +537,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(26.dp))
 
             // ==========================================
-            // 7. FOOTER APLIKASI
+            // 6. FOOTER APLIKASI
             // ==========================================
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -589,7 +546,7 @@ fun SettingsScreen(
                 Box(
                     modifier = Modifier
                         .size(7.dp)
-                        .background(ArenovaPrimaryGreen, CircleShape)
+                        .background(RevoraGreenPrimary, CircleShape)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
@@ -701,7 +658,7 @@ fun SettingsScreen(
             confirmButton = {
                 Button(
                     onClick = { showHelpDialog = false },
-                    colors = ButtonDefaults.buttonColors(containerColor = ArenovaPrimaryGreen),
+                    colors = ButtonDefaults.buttonColors(containerColor = RevoraGreenPrimary),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text("Tutup", color = Color.White)
@@ -721,7 +678,7 @@ fun SettingsScreen(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_document_terms),
                         contentDescription = null,
-                        tint = Color(0xFF00B368),
+                        tint = RevoraGreenPrimary,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -763,7 +720,7 @@ fun SettingsScreen(
             confirmButton = {
                 Button(
                     onClick = { showTermsDialog = false },
-                    colors = ButtonDefaults.buttonColors(containerColor = ArenovaPrimaryGreen),
+                    colors = ButtonDefaults.buttonColors(containerColor = RevoraGreenPrimary),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text("Mengerti", color = Color.White)
@@ -783,7 +740,7 @@ fun SettingsScreen(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_shield_privacy),
                         contentDescription = null,
-                        tint = Color(0xFF00B368),
+                        tint = RevoraGreenPrimary,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -818,7 +775,7 @@ fun SettingsScreen(
             confirmButton = {
                 Button(
                     onClick = { showPrivacyDialog = false },
-                    colors = ButtonDefaults.buttonColors(containerColor = ArenovaPrimaryGreen),
+                    colors = ButtonDefaults.buttonColors(containerColor = RevoraGreenPrimary),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text("Tutup", color = Color.White)
@@ -838,7 +795,7 @@ fun SettingsScreen(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_shield_check),
                         contentDescription = null,
-                        tint = Color(0xFF00B368),
+                        tint = RevoraGreenPrimary,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -861,7 +818,7 @@ fun SettingsScreen(
             confirmButton = {
                 Button(
                     onClick = { showVerifiedDialog = false },
-                    colors = ButtonDefaults.buttonColors(containerColor = ArenovaPrimaryGreen),
+                    colors = ButtonDefaults.buttonColors(containerColor = RevoraGreenPrimary),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text("Oke", color = Color.White)
@@ -910,15 +867,15 @@ private fun SettingsNavRow(
             modifier = Modifier
                 .size(42.dp)
                 .background(
-                    color = Color(0xFFEFF6FF),
-                    shape = CircleShape
+                    color = SettingsIconBg,
+                    shape = RoundedCornerShape(12.dp)
                 ),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 painter = painterResource(id = iconRes),
                 contentDescription = title,
-                tint = Color(0xFF64748B),
+                tint = SettingsIconTint,
                 modifier = Modifier.size(20.dp)
             )
         }

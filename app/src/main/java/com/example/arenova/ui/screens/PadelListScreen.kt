@@ -103,7 +103,7 @@ fun PadelListScreen(
                 starRating = "4.8",
                 location = "Kebayoran Lama, Jakarta Selatan",
                 price = "Rp 95.000",
-                imageRes = R.drawable.img_padel
+                imageRes = R.drawable.img_padel2
             ),
             PadelCourtItem(
                 id = "3",
@@ -112,7 +112,7 @@ fun PadelListScreen(
                 starRating = "4.7",
                 location = "Setiabudi, Jakarta Selatan",
                 price = "Rp 90.000",
-                imageRes = R.drawable.img_padel
+                imageRes = R.drawable.img_padel3
             ),
             PadelCourtItem(
                 id = "4",
@@ -121,7 +121,7 @@ fun PadelListScreen(
                 starRating = "4.6",
                 location = "Mampang, Jakarta Selatan",
                 price = "Rp 85.000",
-                imageRes = R.drawable.img_padel
+                imageRes = R.drawable.img_padel4
             )
         )
     }
